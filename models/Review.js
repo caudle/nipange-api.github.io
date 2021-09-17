@@ -11,8 +11,8 @@ const reviewSchema = mongoose.Schema({
   },
   user: {
     id: String,
-    firstName: String,
-    lastName: String,
+    username: String,
+
     dp: String,
   },
   listing: {

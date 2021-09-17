@@ -43,6 +43,7 @@ router.post('/', upload.single('image'), async (req, res) => {
     const category = new Category({
       name: req.body.name,
       image: req.file.path,
+      description: req.body.description,
     });
     // save
     const savedCategory = await category.save();
@@ -61,6 +62,7 @@ router.patch('/:id', upload.single('image'), async (req, res) => {
       $set: {
         name: req.body.name,
         image: req.file.path,
+        description: req.body.description,
       },
     });
     // get update cat

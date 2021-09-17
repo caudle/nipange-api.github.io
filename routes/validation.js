@@ -3,8 +3,6 @@ const joi = require('@hapi/joi');
 // validate register
 const validateRegister = (data) => {
   const schema = joi.object({
-    firstName: joi.string().min(2),
-    lastName: joi.string().min(2),
     phone: joi.string().min(10),
     email: joi.string().min(4).email(),
     username: joi.string().min(2),
@@ -64,8 +62,8 @@ const validatePrice = (data) => {
   const schema = joi.object({
     price: joi.number(),
     description: joi.string(),
-    terms: joi.number(),
-    fee: joi.number(),
+    terms: joi.optional(),
+    fee: joi.optional(),
   });
   return schema.validate(data);
 };

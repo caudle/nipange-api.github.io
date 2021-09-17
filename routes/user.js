@@ -6,6 +6,7 @@ const multer = require('multer');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Listing = require('../models/Listing');
+const favEmitter = require('../events/myevents');
 
 // dp storage
 const storage = multer.diskStorage({
@@ -80,10 +81,14 @@ router.patch('/dp/:id', upload.single('dp'), async (req, res) => {
 // update user
 router.patch('/:id', async (req, res) => {
   try {
+    const email = await User.findOne({ email: req.body.email });
+    if (email) return res.status(400).json({ error: 'email not available' });
+    const phone = await User.findOne({ phone: req.body.phone });
+    if (phone) return res.status(400).json({ error: 'phone number not available' });
+    const username = await User.findOne({ username: req.body.username });
+    if (username) return res.status(400).json({ error: 'username not available' });
     await User.updateOne({ _id: req.params.id }, {
       $set: {
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
         phone: req.body.phone,
         email: req.body.email,
         username: req.body.username,
@@ -175,8 +180,8 @@ router.ws('/saved/exis', async (ws) => {
   console.log('client connected');
 });
 
-// check if saved
-router.ws('/saved/exists', async (ws) => {
+// check if saved 1 2 be deleted too
+router.ws('/saved/existst', async (ws) => {
   console.log('websocket inititated');
 
   ws.on('message', async (msg) => {
@@ -188,6 +193,7 @@ router.ws('/saved/exists', async (ws) => {
       if (user) {
         const exists = user.favourites.includes(obj.listingId);
         console.log(exists);
+
         ws.send(JSON.stringify(exists));
       } else {
         ws.send(JSON.stringify(false));
@@ -222,6 +228,36 @@ router.ws('/saved/exists', async (ws) => {
   });
 });
 
+// check if saved
+router.ws('/saved/exists', async (ws) => {
+  console.log('websocket inititated');
+
+  ws.on('message', async (msg) => {
+    const obj = JSON.parse(msg);
+    console.log(obj);
+    if (obj.userId.match(/^[0-9a-fA-F]{24}$/)) {
+      // check for user normally first when user visists the uri
+      const user = await User.findById(obj.userId);
+      if (user) {
+        const exists = user.favourites.includes(obj.listingId);
+        console.log(exists);
+
+        ws.send(JSON.stringify(exists));
+      } else {
+        ws.send(JSON.stringify(false));
+      }
+      // listen to event
+      favEmitter.on('done', (favs) => {
+        const exists = favs.includes(obj.listingId);
+
+        ws.send(JSON.stringify(exists));
+      });
+    } else {
+      ws.send(JSON.stringify(false));
+    }
+  });
+});
+
 // add fav listing
 router.patch('/saved/:id', async (req, res) => {
   console.log('adding favs');
@@ -230,6 +266,14 @@ router.patch('/saved/:id', async (req, res) => {
   try {
     await User.updateOne({ _id: req.params.id }, {
       $addToSet: { favourites: [req.body.listingId] },
+    });
+
+    // add event
+    const user = await User.findById(req.params.id);
+    favEmitter.emit('done', user.favourites);
+    // add likes
+    await Listing.updateOne({ _id: req.body.listingId }, {
+      $inc: { likes: 1 },
     });
 
     return res.status(200).json();
@@ -246,7 +290,13 @@ router.delete('/saved/:id', async (req, res) => {
     await User.updateOne({ _id: req.params.id }, {
       $pull: { favourites: req.body.listingId },
     });
-
+    // add event
+    const user = await User.findById(req.params.id);
+    favEmitter.emit('done', user.favourites);
+    // delete likes
+    await Listing.updateOne({ _id: req.body.listingId }, {
+      $inc: { likes: -1 },
+    });
     return res.status(200).json();
   } catch (err) {
     return res.status(400).json({ error: err });

@@ -25,6 +25,7 @@ const listingSchema = mongoose.Schema({
     country: String,
     region: String,
     district: String,
+    ward: String,
     street: String,
   },
   amenities: [String],
@@ -39,20 +40,44 @@ const listingSchema = mongoose.Schema({
       ref: 'Review',
     },
   ],
-  likes: Number,
-  views: Number,
-  terms: Number,
+  likes: {
+    type: Number,
+    default: 0,
+  },
+  views: {
+    type: Number,
+    default: 0,
+  },
+  terms: {
+    per: String, // per month
+    duration: Number, // 6 months
+  },
   complete: {
     type: Number,
     default: 0,
   },
   package: {
-    key: Number,
-    name: String,
-    description: String,
-    amount: Number,
+    key: {
+      type: Number,
+      default: 2,
+    },
+    name: {
+      type: String,
+      default: 'free',
+    },
+    description: {
+      type: String,
+      default: 'upgrade to premium to enjoy exclusive features',
+    },
+    amount: {
+      type: Number,
+      default: 0,
+    },
     createdAt: { type: Date, default: Date.now },
-    expireAt: Date,
+    expireAt: {
+      type: Date,
+      required: false,
+    },
   },
   createdAt: {
     type: Date,

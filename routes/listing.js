@@ -3,6 +3,10 @@
 /* eslint-disable consistent-return */
 const router = require('express').Router();
 const multer = require('multer');
+const fs = require('fs'); // file syst
+const { promisify } = require('util');
+
+const unlinkAsync = promisify(fs.unlink);
 
 const {
   validatePropertyTYpe, validateLocation, validateAmenities,
@@ -48,11 +52,23 @@ const uploadVideos = multer({
 
 // all listings
 router.get('/', async (req, res) => {
+  try {
+    const listings = await Listing.find();
+    // return listings
+    console.log(`my listings: ${listings}`);
+    return res.status(200).json(listings);
+  } catch (err) {
+    res.status(400).json({ error: err });
+  }
+});
+
+// all listings by type
+router.get('/:type', async (req, res) => {
   // get all listings with premium first
   // premium =1
   // ascending order = 1
   try {
-    const listings = await Listing.find({ complete: 6 }).sort({ 'package.key': 1 });
+    const listings = await Listing.find({ propertyType: req.params.type, complete: 6 }).sort({ _id: -1, 'package.key': 1 });
     // return listings
     return res.status(200).json(listings);
   } catch (err) {
@@ -89,9 +105,6 @@ router.post('/property', async (req, res) => {
       }
     }
     // if listing doesnt exist, create one
-    // get user plan
-    const user = await User.findById({ _id: req.body.hostId });
-    const userPackage = user.package;
     // create listing in db
     const listing = new Listing({
       name: req.body.name,
@@ -101,7 +114,6 @@ router.post('/property', async (req, res) => {
       bedroom: req.body.bedroom,
       size: req.body.size,
       building: req.body.building,
-      package: userPackage,
       complete: completed,
     });
 
@@ -109,6 +121,7 @@ router.post('/property', async (req, res) => {
     // update user with listing
     await User.updateOne({ _id: req.body.hostId }, {
       $addToSet: { listings: [savedListing._id] },
+      $set: { type: 'host' },
     });
     // return saved listing
     return res.status(201).json(savedListing);
@@ -183,6 +196,7 @@ router.patch('/photos/:id', uploadImages.array('images', 4), async (req, res) =>
         completed = savedListing.complete;
       }
     }
+
     // create an array with only path names
     const photos = [];
     // fill the array with paths
@@ -193,12 +207,30 @@ router.patch('/photos/:id', uploadImages.array('images', 4), async (req, res) =>
       $addToSet: { photos },
       $set: { complete: completed },
     });
+
     // get listing
     const updatedListing = await Listing.findById(req.params.id);
     // return listing
     return res.status(201).json(updatedListing);
   } catch (err) {
     res.status(400).json({ error: err });
+  }
+});
+
+// delete photos
+router.delete('/photos/:id', async (req, res) => {
+  try {
+    console.log(req.body.images);
+    await Listing.updateOne({ _id: req.params.id }, {
+      $pullAll: { photos: req.body.images },
+    });
+    req.body.images.forEach(async (image) => {
+      // delete file on server
+      await unlinkAsync(image);
+    });
+    return res.status(200).json('image deleted');
+  } catch (err) {
+    return res.status(400).json({ error: err });
   }
 });
 
@@ -214,6 +246,7 @@ router.patch('/videos/:id', uploadVideos.array('videos', 2), async (req, res) =>
         completed = savedListing.complete;
       }
     }
+
     // create an array with only path names
     const videos = [];
     // fill the array with paths
@@ -231,6 +264,23 @@ router.patch('/videos/:id', uploadVideos.array('videos', 2), async (req, res) =>
     return res.status(201).json(updatedListing);
   } catch (err) {
     res.status(400).json({ error: err });
+  }
+});
+
+// delete photos
+router.delete('/videos/:id', async (req, res) => {
+  try {
+    console.log(req.body.videos);
+    await Listing.updateOne({ _id: req.params.id }, {
+      $pullAll: { videos: req.body.videos },
+    });
+    req.body.videos.forEach(async (video) => {
+      // delete file on server
+      await unlinkAsync(video);
+    });
+    return res.status(200).json('video deleted');
+  } catch (err) {
+    return res.status(400).json({ error: err });
   }
 });
 
@@ -267,31 +317,20 @@ router.patch('/price/:id', async (req, res) => {
   }
 });
 
-// specific prop type
-router.get('/property/:type', async (req, res) => {
-  try {
-    const listings = await Listing.find({ propertyType: req.params.type });
-    // return listings
-    return res.status(200).json(listings);
-  } catch (err) {
-    res.status(400).json({ error: err });
-  }
-});
-
 // get search results
 router.get('/search/:search', async (req, res) => {
-  const name = decodeURI(req.params.search);
-  console.log(name);
+  const search = decodeURI(req.params.search);
   try {
     const listings = await Listing.find({
       $or: [
-        { name },
-        { 'location.country': req.params.search },
-        { 'location.region': req.params.search },
-        { 'location.district': req.params.search },
-        { 'location.street': req.params.search },
+        { name: search },
+        { building: search },
+        { 'location.country': search },
+        { 'location.region': search },
+        { 'location.district': search },
+        { 'location.street': search },
       ],
-    });
+    }).limit(20);
     // return
     return res.status(200).json(listings);
   } catch (error) {
@@ -327,9 +366,62 @@ router.post('/filter', async (req, res) => {
       console.log('im in');
       query.amenities = { $all: req.body.amenities };
     }
-    const listings = await Listing.find(query);
+    const listings = await Listing.find(query).limit(20);
     // return
     return res.status(200).json(listings);
+  } catch (error) {
+    return res.status(400).json({ error });
+  }
+});
+
+// more like this
+router.post('/more', async (req, res) => {
+  try {
+    const listings = await Listing.find({
+      $and: [
+        { propertyType: req.body.type },
+        { 'location.district': req.body.district },
+        { _id: { $ne: req.body.id } },
+      ],
+    }).limit(6);
+    // return
+    return res.status(200).json(listings);
+  } catch (error) {
+    return res.status(400).json({ error });
+  }
+});
+
+// delete listing
+router.delete('/:id', async (req, res) => {
+  try {
+    // delete
+    const deleted = await Listing.deleteOne({ _id: req.params.id });
+    await User.updateOne({ _id: req.body.userId }, {
+      $pull: { listings: req.params.id },
+    });
+    // see if user has listings
+    const user = await User.findById(req.body.userId);
+    if (user.listings.length === 0) {
+      // update user to customer
+      await User.updateOne({ _id: req.body.userId }, {
+        $set: { type: 'customer' },
+      });
+    }
+    // return
+    return res.status(200).json(deleted);
+  } catch (err) {
+    return res.status(400).json({ error: err });
+  }
+});
+
+// add views
+router.patch('/views/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedListing = await Listing.updateOne({ _id: id }, {
+      $inc: { views: 1 },
+    });
+    return res.status(200).json(updatedListing);
   } catch (error) {
     return res.status(400).json({ error });
   }

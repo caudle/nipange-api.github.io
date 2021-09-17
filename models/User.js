@@ -1,18 +1,6 @@
 const mongoose = require('mongoose');
 
 const userSchema = mongoose.Schema({
-  firstName: {
-    type: String,
-
-    min: 2,
-    max: 255,
-  },
-  lastName: {
-    type: String,
-
-    min: 2,
-    max: 255,
-  },
   phone: {
     type: String,
 
@@ -40,7 +28,6 @@ const userSchema = mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
     min: 6,
     max: 1024,
   },
@@ -74,29 +61,6 @@ const userSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Listing',
   }],
-  package: {
-    key: {
-      type: Number,
-      default: 2,
-    },
-    name: {
-      type: String,
-      default: 'free',
-    },
-    description: {
-      type: String,
-      default: 'upgrade to premium to enjoy exclusive features',
-    },
-    amount: {
-      type: Number,
-      default: 0,
-    },
-    createdAt: { type: Date, default: Date.now },
-    expireAt: {
-      type: Date,
-      required: false,
-    },
-  },
 });
 
 module.exports = mongoose.model('User', userSchema);

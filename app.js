@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
@@ -47,6 +48,12 @@ const packageRoutes = require('./routes/package');
 const reportRoutes = require('./routes/report');
 const flagRoutes = require('./routes/flag');
 const filterRoutes = require('./routes/filter');
+const countryRoutes = require('./routes/countrys');
+const regionRoutes = require('./routes/regions');
+const districtRoutes = require('./routes/districts');
+const wardRoutes = require('./routes/wards');
+const streetRoutes = require('./routes/streets');
+const amenityRoutes = require('./routes/amenity');
 
 // api middlewares
 
@@ -66,40 +73,55 @@ app.use('/api/package', packageRoutes);
 app.use('/api/report', reportRoutes);
 app.use('/api/flag', flagRoutes);
 app.use('/api/filter', filterRoutes);
+app.use('/api/location/country', countryRoutes);
+app.use('/api/location/region', regionRoutes);
+app.use('/api/location/district', districtRoutes);
+app.use('/api/location/ward', wardRoutes);
+app.use('/api/location/street', streetRoutes);
+app.use('/api/amenity', amenityRoutes);
 app.use('/public/images', express.static('public/images'));
 app.use('/public/videos', express.static('public/videos'));
 app.use('/public/dp', express.static('public/dp'));
 app.use('/public/category', express.static('public/category'));
 
-// change user plans evry day at night
-cron.schedule('50 23 * * *', async () => {
+// change user plans evry day at 23 59
+cron.schedule('59 23 * * *', async () => {
   console.log('Running Cron Job');
   const today = new Date();
-  const dateString = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+  const todayTime = today.getTime();
   const users = await User.find({ 'package.key': 1 });
+
   if (users) {
     for (let i = 0; i < users.length; i = 1 + 1) {
       const user = users[i];
+
       // get user expire date premium plan
-      const expireAt = `${user.createdAt.getFullYear()}-${user.createdAt.getMonth()}-${user.createdAt.getDate()}`;
-      if (dateString === expireAt) {
+      const expireAt = user.package.expireAt.getTime();
+      if (todayTime >= expireAt) {
+        console.log('changing user to free package');
         // premium plan expired
         // update user plan to free
-        await User.updateOne({ _id: user._id }, {
+        User.updateOne({ _id: user._id }, {
           $set: {
             package: {
-              key: 2, name: 'free', amount: 0, createdAt: Date.now,
+              key: 2, name: 'free', description: 'upgrade to premium to enjoy exclusive features', amount: 0, createdAt: Date.now(),
             },
           },
-        });
-        // update all user listings to free
-        user.listings.forEach(async (id) => {
-          await Listing.updateOne({ _id: id }, {
-            $set: {
-              package: {
-                key: 2, name: 'free', amount: 0, createdAt: Date.now,
+        }, (err) => {
+          if (err) {
+            console.log(err);
+          }
+          console.log(`${user.id}: user package changed`);
+          // update all user listings to free
+          user.listings.forEach(async (id) => {
+            await Listing.updateOne({ _id: id }, {
+              $set: {
+                package: {
+                  key: 2, name: 'free', description: 'upgrade to premium to enjoy exclusive features', amount: 0, createdAt: Date.now(),
+                },
               },
-            },
+            });
+            console.log(` listing ${id}: package changed`);
           });
         });
       }
@@ -108,6 +130,6 @@ cron.schedule('50 23 * * *', async () => {
 });
 // start server and listen
 app.listen(5000, (err) => {
-  if (err) throw err;
+  if (err) console.log(err);
   console.log('server started at 5000');
 });
