@@ -11,14 +11,6 @@ const expressWs = require('express-ws')(app);
 
 const cron = require('node-cron');
 
-// const http = require('http');
-
-// const webSocket = require('ws');
-
-// const server = http.createServer(app);
-
-// const wss = new webSocket.Server({ server, path: '/api/user/favourites' });
-
 const cors = require('cors');
 
 const mongoose = require('mongoose');
@@ -55,6 +47,11 @@ const wardRoutes = require('./routes/wards');
 const streetRoutes = require('./routes/streets');
 const amenityRoutes = require('./routes/amenity');
 
+// home route
+app.get('/', (req, res) => {
+  res.send('<h1>Welcome to nipange api</h1>');
+});
+
 // api middlewares
 
 app.use(express.json());
@@ -64,21 +61,21 @@ app.use(express.urlencoded({
 app.use(cors());
 
 // route middlewares
-app.use('/api/user/auth', authRoutes);
-app.use('/api/listing', listingRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/category', categoryRoutes);
-app.use('/api/review', reviewRoutes);
-app.use('/api/package', packageRoutes);
-app.use('/api/report', reportRoutes);
-app.use('/api/flag', flagRoutes);
-app.use('/api/filter', filterRoutes);
-app.use('/api/location/country', countryRoutes);
-app.use('/api/location/region', regionRoutes);
-app.use('/api/location/district', districtRoutes);
-app.use('/api/location/ward', wardRoutes);
-app.use('/api/location/street', streetRoutes);
-app.use('/api/amenity', amenityRoutes);
+app.use('/user/auth', authRoutes);
+app.use('/listing', listingRoutes);
+app.use('/user', userRoutes);
+app.use('/category', categoryRoutes);
+app.use('/review', reviewRoutes);
+app.use('/package', packageRoutes);
+app.use('/report', reportRoutes);
+app.use('/flag', flagRoutes);
+app.use('/filter', filterRoutes);
+app.use('/location/country', countryRoutes);
+app.use('/location/region', regionRoutes);
+app.use('/location/district', districtRoutes);
+app.use('/location/ward', wardRoutes);
+app.use('/location/street', streetRoutes);
+app.use('/amenity', amenityRoutes);
 app.use('/public/images', express.static('public/images'));
 app.use('/public/videos', express.static('public/videos'));
 app.use('/public/dp', express.static('public/dp'));
