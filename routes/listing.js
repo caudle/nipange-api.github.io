@@ -3,10 +3,20 @@
 /* eslint-disable consistent-return */
 const router = require('express').Router();
 const multer = require('multer');
+const multerS3 = require('multer-s3');
 const fs = require('fs'); // file syst
 const { promisify } = require('util');
 
 const unlinkAsync = promisify(fs.unlink);
+
+const AWS = require('aws-sdk');
+
+const spacesEndpoint = new AWS.Endpoint('nyc3.digitaloceanspaces.com');
+const s3 = new AWS.S3({
+  endpoint: spacesEndpoint,
+  accessKeyId: process.env.SPACES_KEY,
+  secretAccessKey: process.env.SPACES_SECRET,
+});
 
 const {
   validatePropertyTYpe, validateLocation, validateAmenities,
@@ -15,14 +25,14 @@ const {
 const Listing = require('../models/Listing');
 const User = require('../models/User');
 
-const imageStorage = multer.diskStorage({
+/* const imageStorage = multer.diskStorage({
   destination: (req, file, callback) => {
     callback(null, './public/images');
   },
   filename: (req, file, callback) => {
     callback(null, new Date().toISOString() + file.originalname);
   },
-});
+}); */
 
 const videoStorage = multer.diskStorage({
   destination: (req, file, callback) => {
@@ -33,21 +43,33 @@ const videoStorage = multer.diskStorage({
   },
 });
 
-const imageFilter = (req, file, callback) => {
+/* const imageFilter = (req, file, callback) => {
   callback(null, true);
-};
+}; */
 
 const videoFilter = (req, file, callback) => {
   callback(null, true);
 };
 
-const uploadImages = multer({
+/* const uploadImages2 = multer({
   storage: imageStorage,
   fileFilter: imageFilter,
-});
+}); */
 const uploadVideos = multer({
   storage: videoStorage,
   fileFilter: videoFilter,
+});
+
+const uploadImages = multer({
+  storage: multerS3({
+    s3,
+    bucket: 'your-space-here',
+    acl: 'public-read',
+    key: (request, file, cb) => {
+      console.log(file);
+      cb(null, file.originalname);
+    },
+  }),
 });
 
 // all listings
@@ -185,6 +207,7 @@ router.patch('/amenities/:id', async (req, res) => {
 });
 
 // add photos
+
 router.patch('/photos/:id', uploadImages.array('images', 4), async (req, res) => {
   let completed = 4;
   // update listing
