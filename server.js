@@ -24,7 +24,12 @@ dotEnv.config();
 
 // connect to db
 mongoose.connect(process.env.DATABASE_URL,
-  { useNewUrlParser: true, useUnifiedTopology: true },
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    tls: true,
+    tlsCAFile: './ca-certificate.crt',
+  },
   (err) => {
     console.log(err);
     console.log('database connected');
