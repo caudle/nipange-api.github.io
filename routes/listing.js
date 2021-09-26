@@ -223,8 +223,11 @@ router.patch('/photos/:id', uploadImages.array('images', 4), async (req, res) =>
     // create an array with only path names
     const photos = [];
     // fill the array with paths
+    console.log(`files: ${req.files}`);
     req.files.forEach((image) => {
-      photos.push(image.path);
+      console.log(`file path: ${image.path}`);
+      console.log(`file location: ${image.location}`);
+      photos.push(image.location);
     });
     await Listing.updateOne({ _id: req.params.id }, {
       $addToSet: { photos },
