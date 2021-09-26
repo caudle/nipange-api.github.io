@@ -63,7 +63,7 @@ const uploadVideos = multer({
 const uploadImages = multer({
   storage: multerS3({
     s3,
-    bucket: 'your-space-here',
+    bucket: 'nipange-bucket',
     acl: 'public-read',
     key: (request, file, cb) => {
       console.log(file);
