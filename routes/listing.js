@@ -291,9 +291,10 @@ router.delete('/videos/:id', async (req, res) => {
   try {
     // delete photos from bucket
     req.body.videos.forEach(async (url) => {
+      console.log(url);
       const params = {
         Bucket: 'nipange-bucket/videos',
-        Key: url,
+        Key: 'url',
       };
       s3.deleteObject(params, (err, data) => {
         if (err) return res.status(400).json({ error: err });
