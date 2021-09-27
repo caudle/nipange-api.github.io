@@ -233,9 +233,11 @@ router.delete('/photos/:id', async (req, res) => {
   try {
     // delete photos from bucket
     req.body.images.forEach(async (url) => {
+      const key = url.split('images/');
+      console.log(key);
       const params = {
         Bucket: 'nipange-bucket/images',
-        Key: url,
+        Key: key,
       };
       s3.deleteObject(params, (err, data) => {
         if (err) return res.status(400).json({ error: err });
@@ -291,10 +293,11 @@ router.delete('/videos/:id', async (req, res) => {
   try {
     // delete photos from bucket
     req.body.videos.forEach(async (url) => {
-      console.log(url);
+      const key = url.split('videos/');
+      console.log(key);
       const params = {
         Bucket: 'nipange-bucket/videos',
-        Key: 'url',
+        Key: key,
       };
       s3.deleteObject(params, (err, data) => {
         if (err) return res.status(400).json({ error: err });
