@@ -237,8 +237,9 @@ router.delete('/photos/:id', async (req, res) => {
         Bucket: 'nipange-bucket/images',
         Key: url,
       };
-      s3.deleteObject(params, (err) => {
+      s3.deleteObject(params, (err, data) => {
         if (err) return res.status(400).json({ error: err });
+        console.log(data);
       });
     });
 
@@ -294,8 +295,9 @@ router.delete('/videos/:id', async (req, res) => {
         Bucket: 'nipange-bucket/videos',
         Key: url,
       };
-      s3.deleteObject(params, (err) => {
+      s3.deleteObject(params, (err, data) => {
         if (err) return res.status(400).json({ error: err });
+        console.log(data);
       });
     });
     await Listing.updateOne({ _id: req.params.id }, {
