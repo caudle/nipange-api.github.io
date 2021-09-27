@@ -1,26 +1,39 @@
+/* eslint-disable consistent-return */
 /* eslint-disable prefer-template */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 const router = require('express').Router();
 const multer = require('multer');
 const mongoose = require('mongoose');
+const multerS3 = require('multer-s3');
+const AWS = require('aws-sdk');
 const User = require('../models/User');
 const Listing = require('../models/Listing');
 const favEmitter = require('../events/myevents');
 
-// dp storage
-const storage = multer.diskStorage({
-  destination: (req, file, callback) => {
-    callback(null, './public/dp');
-  },
-  filename: (req, file, callback) => {
-    callback(null, new Date().toISOString() + file.originalname);
-  },
+const spacesEndpoint = new AWS.Endpoint('fra1.digitaloceanspaces.com');
+const s3 = new AWS.S3({
+  endpoint: spacesEndpoint,
+  accessKeyId: process.env.SPACES_KEY,
+  secretAccessKey: process.env.SPACES_SECRET,
 });
 
+const dpFilter = (req, file, callback) => {
+  callback(null, true);
+};
+
 // upload dp
-const upload = multer({
-  storage,
+const uploadDp = multer({
+  storage: multerS3({
+    s3,
+    bucket: 'nipange-bucket/profiles',
+    acl: 'public-read',
+    key: (request, file, cb) => {
+      console.log(file);
+      cb(null, new Date().toISOString() + file.originalname);
+    },
+  }),
+  fileFilter: dpFilter,
 });
 
 // get all users
@@ -63,11 +76,26 @@ router.get('/:id/listing', async (req, res) => {
 });
 
 // update dp
-router.patch('/dp/:id', upload.single('dp'), async (req, res) => {
+router.patch('/dp/:id/:oldDp', uploadDp.single('dp'), async (req, res) => {
   try {
+    const { oldDp } = req.params;
+    // delete old dp frm space
+    if (oldDp) {
+      const splits = oldDp.split('profiles/');
+      // get old dp filename
+      const key = splits[1];
+      const params = {
+        Bucket: 'nipange-bucket/profiles',
+        Key: key,
+      };
+      s3.deleteObject(params, (err, data) => {
+        if (err) return res.status(400).json({ error: err });
+        console.log(data);
+      });
+    }
     // update dp
     await User.updateOne({ _id: req.params.id }, {
-      $set: { dp: req.file.path },
+      $set: { dp: req.file.location },
     });
     // get update user
     const updatedUser = await User.findById(req.params.id);

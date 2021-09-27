@@ -425,7 +425,39 @@ router.post('/more', async (req, res) => {
 // delete listing
 router.delete('/:id', async (req, res) => {
   try {
-    // delete
+    // delete media frm space
+    const listing = await Listing.findById(req.params.id);
+    if (listing.photos.length > 0) {
+      listing.photos.forEach((url) => {
+        const splits = url.split('images/');
+        const key = splits[1];
+        console.log(key);
+        const params = {
+          Bucket: 'nipange-bucket/images',
+          Key: key,
+        };
+        s3.deleteObject(params, (err, data) => {
+          if (err) return res.status(400).json({ error: err });
+          console.log(data);
+        });
+      });
+    }
+    if (listing.videos.length > 0) {
+      listing.videos.forEach((url) => {
+        const splits = url.split('videos/');
+        const key = splits[1];
+        console.log(key);
+        const params = {
+          Bucket: 'nipange-bucket/videos',
+          Key: key,
+        };
+        s3.deleteObject(params, (err, data) => {
+          if (err) return res.status(400).json({ error: err });
+          console.log(data);
+        });
+      });
+    }
+    // delete listing frm db
     const deleted = await Listing.deleteOne({ _id: req.params.id });
     await User.updateOne({ _id: req.body.userId }, {
       $pull: { listings: req.params.id },
