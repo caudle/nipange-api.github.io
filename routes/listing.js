@@ -233,7 +233,8 @@ router.delete('/photos/:id', async (req, res) => {
   try {
     // delete photos from bucket
     req.body.images.forEach(async (url) => {
-      const key = url.split('images/');
+      const splits = url.split('images/');
+      const key = splits[1];
       console.log(key);
       const params = {
         Bucket: 'nipange-bucket/images',
@@ -293,7 +294,8 @@ router.delete('/videos/:id', async (req, res) => {
   try {
     // delete photos from bucket
     req.body.videos.forEach(async (url) => {
-      const key = url.split('videos/');
+      const splits = url.split('videos/');
+      const key = splits[1];
       console.log(key);
       const params = {
         Bucket: 'nipange-bucket/videos',
