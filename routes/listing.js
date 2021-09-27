@@ -4,10 +4,10 @@
 const router = require('express').Router();
 const multer = require('multer');
 const multerS3 = require('multer-s3');
-const fs = require('fs'); // file syst
-const { promisify } = require('util');
+// const fs = require('fs'); // file syst
+// const { promisify } = require('util');
 
-const unlinkAsync = promisify(fs.unlink);
+// const unlinkAsync = promisify(fs.unlink);
 
 const AWS = require('aws-sdk');
 
@@ -25,51 +25,38 @@ const {
 const Listing = require('../models/Listing');
 const User = require('../models/User');
 
-/* const imageStorage = multer.diskStorage({
-  destination: (req, file, callback) => {
-    callback(null, './public/images');
-  },
-  filename: (req, file, callback) => {
-    callback(null, new Date().toISOString() + file.originalname);
-  },
-}); */
-
-const videoStorage = multer.diskStorage({
-  destination: (req, file, callback) => {
-    callback(null, './public/videos');
-  },
-  filename: (req, file, callback) => {
-    callback(null, new Date().toISOString() + file.originalname);
-  },
-});
-
-/* const imageFilter = (req, file, callback) => {
+const imageFilter = (req, file, callback) => {
   callback(null, true);
-}; */
+};
 
 const videoFilter = (req, file, callback) => {
   callback(null, true);
 };
 
-/* const uploadImages2 = multer({
-  storage: imageStorage,
-  fileFilter: imageFilter,
-}); */
-const uploadVideos = multer({
-  storage: videoStorage,
-  fileFilter: videoFilter,
-});
-
 const uploadImages = multer({
   storage: multerS3({
     s3,
-    bucket: 'nipange-bucket',
+    bucket: 'nipange-bucket/images',
+    acl: 'public-read',
+    key: (request, file, cb) => {
+      console.log(file);
+      cb(null, new Date().toISOString() + file.originalname);
+    },
+  }),
+  fileFilter: imageFilter,
+});
+
+const uploadVideos = multer({
+  storage: multerS3({
+    s3,
+    bucket: 'nipange-bucket/videos',
     acl: 'public-read',
     key: (request, file, cb) => {
       console.log(file);
       cb(null, file.originalname);
     },
   }),
+  fileFilter: videoFilter,
 });
 
 // all listings
@@ -223,10 +210,8 @@ router.patch('/photos/:id', uploadImages.array('images', 4), async (req, res) =>
     // create an array with only path names
     const photos = [];
     // fill the array with paths
-    console.log(`files: ${req.files}`);
+
     req.files.forEach((image) => {
-      console.log(`file path: ${image.path}`);
-      console.log(`file location: ${image.location}`);
       photos.push(image.location);
     });
     await Listing.updateOne({ _id: req.params.id }, {
@@ -246,14 +231,21 @@ router.patch('/photos/:id', uploadImages.array('images', 4), async (req, res) =>
 // delete photos
 router.delete('/photos/:id', async (req, res) => {
   try {
-    console.log(req.body.images);
+    // delete photos from bucket
+    req.body.images.forEach(async (url) => {
+      const params = {
+        bucket: 'nipange-bucket/images',
+        key: url,
+      };
+      s3.deleteObject(params, (err) => {
+        if (err) return res.status(400).json({ error: err });
+      });
+    });
+
     await Listing.updateOne({ _id: req.params.id }, {
       $pullAll: { photos: req.body.images },
     });
-    req.body.images.forEach(async (image) => {
-      // delete file on server
-      await unlinkAsync(image);
-    });
+
     return res.status(200).json('image deleted');
   } catch (err) {
     return res.status(400).json({ error: err });
@@ -277,7 +269,7 @@ router.patch('/videos/:id', uploadVideos.array('videos', 2), async (req, res) =>
     const videos = [];
     // fill the array with paths
     req.files.forEach((video) => {
-      videos.push(video.path);
+      videos.push(video.location);
     });
     // updt listing
     await Listing.updateOne({ _id: req.params.id }, {
@@ -293,16 +285,21 @@ router.patch('/videos/:id', uploadVideos.array('videos', 2), async (req, res) =>
   }
 });
 
-// delete photos
+// delete videos
 router.delete('/videos/:id', async (req, res) => {
   try {
-    console.log(req.body.videos);
+    // delete photos from bucket
+    req.body.videos.forEach(async (url) => {
+      const params = {
+        bucket: 'nipange-bucket/videos',
+        key: url,
+      };
+      s3.deleteObject(params, (err) => {
+        if (err) return res.status(400).json({ error: err });
+      });
+    });
     await Listing.updateOne({ _id: req.params.id }, {
       $pullAll: { videos: req.body.videos },
-    });
-    req.body.videos.forEach(async (video) => {
-      // delete file on server
-      await unlinkAsync(video);
     });
     return res.status(200).json('video deleted');
   } catch (err) {
