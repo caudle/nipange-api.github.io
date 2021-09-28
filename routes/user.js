@@ -7,6 +7,7 @@ const multer = require('multer');
 const mongoose = require('mongoose');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
+const { v1: uuidv1 } = require('uuid');
 const User = require('../models/User');
 const Listing = require('../models/Listing');
 const favEmitter = require('../events/myevents');
@@ -30,7 +31,7 @@ const uploadDp = multer({
     acl: 'public-read',
     key: (request, file, cb) => {
       console.log(file);
-      cb(null, new Date().toISOString() + file.originalname);
+      cb(null, uuidv1() + file.originalname);
     },
   }),
   fileFilter: dpFilter,
@@ -98,8 +99,7 @@ router.patch('/dp/:id', uploadDp.single('dp'), async (req, res) => {
       });
     }
     console.log('location: ' + req.file.location);
-    const test = decodeURI(req.file.location);
-    console.log('decode: ' + test);
+
     // update dp
     await User.updateOne({ _id: req.params.id }, {
       $set: { dp: req.file.location },
