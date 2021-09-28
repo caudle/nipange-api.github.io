@@ -51,20 +51,19 @@ const wardRoutes = require('./routes/wards');
 const streetRoutes = require('./routes/streets');
 const amenityRoutes = require('./routes/amenity');
 
-// home route
-app.get('/', (req, res) => {
-  res.send('<h1>Welcome to nipange api</h1>');
-});
-
 // verify token
 const verifyToken = (req, res, next) => {
   const bearerHeader = req.headers.authorization;
   console.log(`header: ${bearerHeader}`);
-  const splits = bearerHeader.split(' ');
-  const bearerToken = splits[1];
-  console.log(`token: ${bearerToken}`);
-  if (bearerToken === process.env.TOKEN) {
-    next();
+  if (typeof bearerHeader !== 'undefined') {
+    const splits = bearerHeader.split(' ');
+    const bearerToken = splits[1];
+    console.log(`token: ${bearerToken}`);
+    if (bearerToken === process.env.API_KEY) {
+      next();
+    } else {
+      res.status(403).json({ error: 'invalid token' });
+    }
   } else {
     res.status(403).json({ error: 'invalid token' });
   }
@@ -78,6 +77,11 @@ app.use(express.urlencoded({
 }));
 app.use(cors());
 app.use(verifyToken);
+
+// home route
+app.get('/', verifyToken, (req, res) => {
+  res.send('<h1>Welcome to nipange api</h1>');
+});
 
 // route middlewares
 app.use('/user/auth', authRoutes);
