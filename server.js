@@ -17,7 +17,6 @@ const mongoose = require('mongoose');
 
 const dotEnv = require('dotenv');
 
-const User = require('./models/User');
 const Listing = require('./models/Listing');
 
 dotEnv.config();
@@ -57,6 +56,20 @@ app.get('/', (req, res) => {
   res.send('<h1>Welcome to nipange api</h1>');
 });
 
+// verify token
+const verifyToken = (req, res, next) => {
+  const bearerHeader = req.headers.authorization;
+  console.log(`header: ${bearerHeader}`);
+  const splits = bearerHeader.split(' ');
+  const bearerToken = splits[1];
+  console.log(`token: ${bearerToken}`);
+  if (bearerToken === process.env.TOKEN) {
+    next();
+  } else {
+    res.status(403).json({ error: 'invalid token' });
+  }
+};
+
 // api middlewares
 
 app.use(express.json());
@@ -64,6 +77,7 @@ app.use(express.urlencoded({
   extended: true,
 }));
 app.use(cors());
+app.use(verifyToken);
 
 // route middlewares
 app.use('/user/auth', authRoutes);
@@ -86,24 +100,24 @@ app.use('/public/videos', express.static('public/videos'));
 app.use('/public/dp', express.static('public/dp'));
 app.use('/public/category', express.static('public/category'));
 
-// change user plans evry day at 23 59
+// change listing plans evry day at 23 59
 cron.schedule('59 23 * * *', async () => {
   console.log('Running Cron Job');
   const today = new Date();
   const todayTime = today.getTime();
-  const users = await User.find({ 'package.key': 1 });
+  const listings = await Listing.find({ 'package.key': 1 });
 
-  if (users) {
-    for (let i = 0; i < users.length; i = 1 + 1) {
-      const user = users[i];
+  if (listings) {
+    for (let i = 0; i < listings.length; i = 1 + 1) {
+      const listing = listings[i];
 
       // get user expire date premium plan
-      const expireAt = user.package.expireAt.getTime();
+      const expireAt = listing.package.expireAt.getTime();
       if (todayTime >= expireAt) {
-        console.log('changing user to free package');
+        console.log('changing listing to free package');
         // premium plan expired
         // update user plan to free
-        User.updateOne({ _id: user._id }, {
+        Listing.updateOne({ _id: listing._id }, {
           $set: {
             package: {
               key: 2, name: 'free', description: 'upgrade to premium to enjoy exclusive features', amount: 0, createdAt: Date.now(),
@@ -113,18 +127,7 @@ cron.schedule('59 23 * * *', async () => {
           if (err) {
             console.log(err);
           }
-          console.log(`${user.id}: user package changed`);
-          // update all user listings to free
-          user.listings.forEach(async (id) => {
-            await Listing.updateOne({ _id: id }, {
-              $set: {
-                package: {
-                  key: 2, name: 'free', description: 'upgrade to premium to enjoy exclusive features', amount: 0, createdAt: Date.now(),
-                },
-              },
-            });
-            console.log(` listing ${id}: package changed`);
-          });
+          console.log(`${listing._id}: listing package changed`);
         });
       }
     }
