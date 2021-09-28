@@ -82,6 +82,7 @@ router.patch('/dp/:id', uploadDp.single('dp'), async (req, res) => {
     const oldDp = user.dp;
     // delete old dp frm space
     if (oldDp.length > 2) {
+      console.log('deleting....');
       const splits = oldDp.split('profiles/');
       // get old dp filename
       const key = splits[1];
@@ -92,6 +93,7 @@ router.patch('/dp/:id', uploadDp.single('dp'), async (req, res) => {
       s3.deleteObject(params, (err, data) => {
         if (err) return res.status(400).json({ error: err });
         console.log(data);
+        console.log('dp deleted');
       });
     }
     // update dp
