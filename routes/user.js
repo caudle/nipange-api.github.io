@@ -97,6 +97,9 @@ router.patch('/dp/:id', uploadDp.single('dp'), async (req, res) => {
         console.log('dp deleted');
       });
     }
+    console.log('location: ' + req.file.location);
+    const test = decodeURI(req.file.location);
+    console.log('decode: ' + test);
     // update dp
     await User.updateOne({ _id: req.params.id }, {
       $set: { dp: req.file.location },
