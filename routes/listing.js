@@ -4,11 +4,7 @@
 const router = require('express').Router();
 const multer = require('multer');
 const multerS3 = require('multer-s3');
-// const fs = require('fs'); // file syst
-// const { promisify } = require('util');
-
-// const unlinkAsync = promisify(fs.unlink);
-
+const { v1: uuidv1 } = require('uuid');
 const AWS = require('aws-sdk');
 
 const spacesEndpoint = new AWS.Endpoint('fra1.digitaloceanspaces.com');
@@ -40,7 +36,7 @@ const uploadImages = multer({
     acl: 'public-read',
     key: (request, file, cb) => {
       console.log(file);
-      cb(null, new Date().toISOString() + file.originalname);
+      cb(null, uuidv1() + file.originalname);
     },
   }),
   fileFilter: imageFilter,
@@ -53,7 +49,7 @@ const uploadVideos = multer({
     acl: 'public-read',
     key: (request, file, cb) => {
       console.log(file);
-      cb(null, file.originalname);
+      cb(null, uuidv1() + file.originalname);
     },
   }),
   fileFilter: videoFilter,
@@ -240,9 +236,8 @@ router.delete('/photos/:id', async (req, res) => {
         Bucket: 'nipange-bucket/images',
         Key: key,
       };
-      s3.deleteObject(params, (err, data) => {
+      s3.deleteObject(params, (err) => {
         if (err) return res.status(400).json({ error: err });
-        console.log(data);
       });
     });
 
@@ -301,9 +296,8 @@ router.delete('/videos/:id', async (req, res) => {
         Bucket: 'nipange-bucket/videos',
         Key: key,
       };
-      s3.deleteObject(params, (err, data) => {
+      s3.deleteObject(params, (err) => {
         if (err) return res.status(400).json({ error: err });
-        console.log(data);
       });
     });
     await Listing.updateOne({ _id: req.params.id }, {
@@ -436,9 +430,8 @@ router.delete('/:id', async (req, res) => {
           Bucket: 'nipange-bucket/images',
           Key: key,
         };
-        s3.deleteObject(params, (err, data) => {
+        s3.deleteObject(params, (err) => {
           if (err) return res.status(400).json({ error: err });
-          console.log(data);
         });
       });
     }
@@ -451,9 +444,8 @@ router.delete('/:id', async (req, res) => {
           Bucket: 'nipange-bucket/videos',
           Key: key,
         };
-        s3.deleteObject(params, (err, data) => {
+        s3.deleteObject(params, (err) => {
           if (err) return res.status(400).json({ error: err });
-          console.log(data);
         });
       });
     }

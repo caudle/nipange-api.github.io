@@ -30,7 +30,6 @@ const uploadDp = multer({
     bucket: 'nipange-bucket/profiles',
     acl: 'public-read',
     key: (request, file, cb) => {
-      console.log(file);
       cb(null, uuidv1() + file.originalname);
     },
   }),
@@ -83,22 +82,18 @@ router.patch('/dp/:id', uploadDp.single('dp'), async (req, res) => {
     const oldDp = user.dp;
     // delete old dp frm space
     if (oldDp.length > 2) {
-      console.log('deleting....');
       const splits = oldDp.split('profiles/');
       // get old dp filename
       const key = splits[1];
-      console.log(key);
+
       const params = {
         Bucket: 'nipange-bucket/profiles',
         Key: key,
       };
-      await s3.deleteObject(params, (err, data) => {
+      await s3.deleteObject(params, (err) => {
         if (err) return res.status(400).json({ error: err });
-        console.log(data);
-        console.log('dp deleted');
       });
     }
-    console.log('location: ' + req.file.location);
 
     // update dp
     await User.updateOne({ _id: req.params.id }, {
