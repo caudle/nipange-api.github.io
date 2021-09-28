@@ -76,11 +76,12 @@ router.get('/:id/listing', async (req, res) => {
 });
 
 // update dp
-router.patch('/dp/:id/:oldDp', uploadDp.single('dp'), async (req, res) => {
+router.patch('/dp/:id', uploadDp.single('dp'), async (req, res) => {
   try {
-    const { oldDp } = req.params;
+    const user = await User.findById(req.params.id);
+    const oldDp = user.dp;
     // delete old dp frm space
-    if (oldDp) {
+    if (oldDp.length > 2) {
       const splits = oldDp.split('profiles/');
       // get old dp filename
       const key = splits[1];
