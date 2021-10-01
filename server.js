@@ -30,8 +30,8 @@ mongoose.connect(process.env.DATABASE_URL,
     tlsCAFile: './ca-certificate.crt',
   },
   (err) => {
-    console.log(err);
-    console.log('database connected');
+    if (err)console.log(err);
+    console.log(`database connected: ${process.env.DATABASE_URL}`);
   });
 
 // import routes
