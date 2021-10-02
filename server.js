@@ -6,14 +6,16 @@ const express = require('express');
 
 const app = express();
 
-// eslint-disable-next-line no-unused-vars
-const expressWs = require('express-ws')(app);
+const http = require('http');
+
+const httpServer = http.createServer(app);
+
+const expressWs = require('express-ws')(app, httpServer, { leaveRouterUntouched: true });
 
 const cron = require('node-cron');
 
 const cors = require('cors');
 
-// eslint-disable-next-line no-unused-vars
 const mongoose = require('mongoose');
 
 const dotEnv = require('dotenv');
@@ -51,6 +53,15 @@ const districtRoutes = require('./routes/districts');
 const wardRoutes = require('./routes/wards');
 const streetRoutes = require('./routes/streets');
 const amenityRoutes = require('./routes/amenity');
+
+// websocket routes
+const { getReviewsRouter } = require('./routes/review');
+const { savedRouter, existsRouter } = require('./routes/user');
+
+// apply ws
+expressWs.applyTo(getReviewsRouter);
+expressWs.applyTo(savedRouter);
+expressWs.applyTo(existsRouter);
 
 // verify token
 const verifyToken = (req, res, next) => {
@@ -139,7 +150,7 @@ cron.schedule('59 23 * * *', async () => {
   }
 });
 // start server and listen
-app.listen(8080, (err) => {
+httpServer.listen(8080, (err) => {
   if (err) console.log(err);
-  console.log('server started at 8080');
+  console.log('http server started at 8080');
 });

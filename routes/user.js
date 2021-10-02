@@ -152,7 +152,7 @@ router.patch('/type/:id', async (req, res) => {
 });
 
 // check if saved
-router.ws('/saved/exists', async (ws) => {
+const existsRouter = router.get('/saved/exists', async (ws) => {
   ws.on('message', async (msg) => {
     const obj = JSON.parse(msg);
     console.log(obj);
@@ -220,7 +220,7 @@ router.delete('/saved/:id', async (req, res) => {
 });
 
 // get all saved
-router.ws('/saved', async (ws) => {
+const savedRouter = router.get('/saved', async (ws) => {
   ws.on('message', async (msg) => {
     // parse msg
     const obj = JSON.parse(msg);
@@ -275,3 +275,5 @@ router.get('/:id/package', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.existsRouter = existsRouter;
+module.exports.savedRouter = savedRouter;

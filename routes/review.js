@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
 });
 
 // get all reviews for a listing
-router.ws('/', async (ws) => {
+const getReviewsRouter = router.get('/', async (ws) => {
   console.log('websocket inititaed');
   ws.on('message', async (msg) => {
     const obj = JSON.parse(msg);
@@ -72,3 +72,4 @@ router.post('/:userId', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.getReviewsRouter = getReviewsRouter;
