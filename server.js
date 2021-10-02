@@ -150,7 +150,7 @@ cron.schedule('59 23 * * *', async () => {
   }
 });
 // start server and listen
-httpServer.listen(8080, (err) => {
+httpServer.listen(3000, (err) => {
   if (err) console.log(err);
   console.log('http server started at 8080');
 });
