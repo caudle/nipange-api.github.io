@@ -5,8 +5,6 @@ const router = require('express').Router();
 
 const bycrypt = require('bcryptjs');
 
-const jwt = require('jsonwebtoken');
-
 const nodemailer = require('nodemailer');
 
 const dotEnv = require('dotenv');
@@ -44,9 +42,8 @@ router.post('/register', async (req, res) => {
   });
   try {
     const savedUser = await user.save();
-    const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
     // return user and token
-    return res.status(201).json({ user: savedUser, token });
+    return res.status(201).json({ user: savedUser });
   } catch (err) {
     res.status(400).json({ error: err });
   }
@@ -63,10 +60,8 @@ router.post('/login', async (req, res) => {
   // validate password
   const validPassword = await bycrypt.compare(req.body.password, user.password);
   if (!validPassword) return res.status(400).json({ error: 'incorrect password or email' });
-  // create auth token
-  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
   // return user and token
-  return res.status(200).json({ user, token });
+  return res.status(200).json({ user });
 });
 
 // social auth
@@ -76,10 +71,8 @@ router.post('/socialAuth', async (req, res) => {
     const user = await User.findOne({ email: req.body.email });
     if (user) {
     // login user
-      // create auth token
-      const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
       // return user and token
-      return res.status(200).json({ user, token });
+      return res.status(200).json({ user });
     }
 
     // register user
@@ -97,9 +90,8 @@ router.post('/socialAuth', async (req, res) => {
       type: req.body.type,
     });
     const savedUser = await newUser.save();
-    const token = jwt.sign({ _id: newUser._id }, process.env.TOKEN_SECRET);
-    // return user and token
-    return res.status(201).json({ user: savedUser, token });
+    // return user
+    return res.status(201).json({ user: savedUser });
   } catch (err) {
     return res.status(400).json({ error: err });
   }
