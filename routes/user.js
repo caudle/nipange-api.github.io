@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
 const { v1: uuidv1 } = require('uuid');
+
 const User = require('../models/User');
 const Listing = require('../models/Listing');
 const favEmitter = require('../events/myevents');
@@ -152,7 +153,7 @@ router.patch('/type/:id', async (req, res) => {
 });
 
 // check if saved
-const existsRouter = router.get('/saved/exists', async (ws) => {
+router.ws('/saved/exists', async (ws) => {
   ws.on('message', async (msg) => {
     const obj = JSON.parse(msg);
     console.log(obj);
@@ -220,7 +221,7 @@ router.delete('/saved/:id', async (req, res) => {
 });
 
 // get all saved
-const savedRouter = router.get('/saved', async (ws) => {
+router.ws('/saved', async (ws) => {
   ws.on('message', async (msg) => {
     // parse msg
     const obj = JSON.parse(msg);
@@ -275,5 +276,3 @@ router.get('/:id/package', async (req, res) => {
 });
 
 module.exports = router;
-module.exports.existsRouter = existsRouter;
-module.exports.savedRouter = savedRouter;

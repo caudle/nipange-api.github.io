@@ -10,12 +10,14 @@ const http = require('http');
 
 const httpServer = http.createServer(app);
 
-const expressWs = require('express-ws')(app, httpServer, { leaveRouterUntouched: true });
+// eslint-disable-next-line no-unused-vars
+const expressWs = require('express-ws')(app, httpServer);
 
 const cron = require('node-cron');
 
 const cors = require('cors');
 
+// eslint-disable-next-line no-unused-vars
 const mongoose = require('mongoose');
 
 const dotEnv = require('dotenv');
@@ -53,15 +55,6 @@ const districtRoutes = require('./routes/districts');
 const wardRoutes = require('./routes/wards');
 const streetRoutes = require('./routes/streets');
 const amenityRoutes = require('./routes/amenity');
-
-// websocket routes
-const { getReviewsRouter } = require('./routes/review');
-const { savedRouter, existsRouter } = require('./routes/user');
-
-// apply ws
-expressWs.applyTo(getReviewsRouter);
-expressWs.applyTo(savedRouter);
-expressWs.applyTo(existsRouter);
 
 // verify token
 const verifyToken = (req, res, next) => {
