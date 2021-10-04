@@ -452,7 +452,7 @@ router.delete('/:id', async (req, res) => {
     // delete listing frm db
     const deleted = await Listing.deleteOne({ _id: req.params.id });
     await User.updateOne({ _id: req.body.userId }, {
-      $pull: { listings: req.params.id },
+      $pull: { listings: req.params.id, favourites: req.params.id },
     });
     // see if user has listings
     const user = await User.findById(req.body.userId);
