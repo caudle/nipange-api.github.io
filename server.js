@@ -6,12 +6,8 @@ const express = require('express');
 
 const app = express();
 
-const http = require('http');
-
-const httpServer = http.createServer(app);
-
 // eslint-disable-next-line no-unused-vars
-const expressWs = require('express-ws')(app, httpServer);
+const expressWs = require('express-ws')(app);
 
 const cron = require('node-cron');
 
@@ -143,7 +139,7 @@ cron.schedule('59 23 * * *', async () => {
   }
 });
 // start server and listen
-httpServer.listen(8080, (err) => {
+app.listen(process.env.PORT || 3000, (err) => {
   if (err) console.log(err);
-  console.log('http server started at 8080');
+  console.log(`server is running at port ${process.env.PORT || 3000}`);
 });
