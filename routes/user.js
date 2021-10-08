@@ -76,6 +76,23 @@ router.get('/:id/listing', async (req, res) => {
   }
 });
 
+// premium user listings
+router.get('/:id/listings/premium', async (req, res) => {
+  try {
+    // get user
+    const user = await User.findById(req.params.id);
+    const listings = [];
+    // get all premium listng frm user
+    user.listings.forEach((id) => {
+      listings.push(Listing.findOne({ _id: id, 'package.key': 1 }));
+    });
+    // return listings
+    return res.status(200).json(await Promise.all(listings));
+  } catch (err) {
+    return res.status(400).json({ error: err });
+  }
+});
+
 // update dp
 router.patch('/dp/:id', uploadDp.single('dp'), async (req, res) => {
   try {
