@@ -152,8 +152,36 @@ router.patch('/type/:id', async (req, res) => {
   }
 });
 
-// check if saved
+// check if saved for a listing item
 router.ws('/saved/exists', async (ws) => {
+  ws.on('message', async (msg) => {
+    const obj = JSON.parse(msg);
+    console.log(obj);
+    if (obj.userId.match(/^[0-9a-fA-F]{24}$/)) {
+      // check for user normally first when user visists the uri
+      const user = await User.findById(obj.userId);
+      if (user) {
+        const exists = user.favourites.includes(obj.listingId);
+
+        ws.send(JSON.stringify(exists));
+      } else {
+        ws.send(JSON.stringify(false));
+      }
+      // listen to event
+      favEmitter.on('done', (favs) => {
+        const exists = favs.includes(obj.listingId);
+
+        ws.send(JSON.stringify(exists));
+      });
+    } else {
+      ws.send(JSON.stringify(false));
+    }
+  });
+});
+
+// we differentiate btn the two cause of errors we got
+// check if saved for details page
+router.ws('/saved/exists/details', async (ws) => {
   ws.on('message', async (msg) => {
     const obj = JSON.parse(msg);
     console.log(obj);
