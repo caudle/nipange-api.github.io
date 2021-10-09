@@ -64,8 +64,10 @@ router.get('/:id/listing', async (req, res) => {
   try {
     // get user
     const user = await User.findById(req.params.id).populate('listings');
+    let listings = [];
+    listings = user.listings;
     // return listings
-    return res.status(200).json(user.listings);
+    return res.status(200).json(listings);
   } catch (err) {
     return res.status(400).json({ error: err });
   }
@@ -76,7 +78,9 @@ router.get('/:id/listings/premium', async (req, res) => {
   try {
     // get user
     const user = await User.findOne({ _id: req.params.id, 'package.key': 1 }).populate('listings');
-    return res.status(200).json(user.listings);
+    let listings = [];
+    listings = user.listings;
+    return res.status(200).json(listings);
   } catch (err) {
     return res.status(400).json({ error: err });
   }
@@ -266,7 +270,9 @@ router.ws('/saved', async (ws) => {
       const user = await User.findOne({ _id: obj.userId }).populate('favourites');
 
       if (user) {
-        ws.send(JSON.stringify(user.favourites));
+        let favourites = [];
+        favourites = user.favourites;
+        ws.send(JSON.stringify(favourites));
       } else ws.send(JSON.stringify([]));
 
       // watch user collection
