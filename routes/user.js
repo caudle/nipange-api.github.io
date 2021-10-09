@@ -64,14 +64,8 @@ router.get('/:id/listing', async (req, res) => {
   try {
     // get user
     const user = await User.findById(req.params.id).populate('listings');
-    let listings = [];
-    listings = user.listings;
-    // get all listng frm user
-    /* user.listings.forEach((id) => {
-      listings.push(Listing.findById(id));
-    }); */
     // return listings
-    return res.status(200).json(listings);
+    return res.status(200).json(user.listings);
   } catch (err) {
     return res.status(400).json({ error: err });
   }
@@ -81,15 +75,8 @@ router.get('/:id/listing', async (req, res) => {
 router.get('/:id/listings/premium', async (req, res) => {
   try {
     // get user
-    const user = await User.findById(req.params.id).populate('listings');
-    let listings = [];
-    listings = user.listings;
-    // get all premium listng frm user
-    /* user.listings.forEach((id) => {
-      listings.push(Listing.findOne({ _id: id, 'package.key': 1 }));
-    }); */
-    // return listings
-    return res.status(200).json(listings);
+    const user = await User.findOne({ _id: req.params.id, 'package.key': 1 }).populate('listings');
+    return res.status(200).json(user.listings);
   } catch (err) {
     return res.status(400).json({ error: err });
   }
@@ -276,13 +263,10 @@ router.ws('/saved', async (ws) => {
     // if valid id
     if (obj.userId.match(/^[0-9a-fA-F]{24}$/)) {
       // do it noirmally when user first access the uri
-      const user = await User.findById(obj.userId);
+      const user = await User.findOne({ _id: obj.userId }).populate('favourites');
+
       if (user) {
-        const favourites = [];
-        user.favourites.forEach((id) => {
-          favourites.push(Listing.findById(id));
-        });
-        ws.send(JSON.stringify(await Promise.all(favourites)));
+        ws.send(JSON.stringify(user.favourites));
       } else ws.send(JSON.stringify([]));
 
       // watch user collection

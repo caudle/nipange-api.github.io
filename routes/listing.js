@@ -60,7 +60,6 @@ router.get('/', async (req, res) => {
   try {
     const listings = await Listing.find();
     // return listings
-    console.log(`my listings: ${listings}`);
     return res.status(200).json(listings);
   } catch (err) {
     res.status(400).json({ error: err });
