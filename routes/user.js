@@ -4,7 +4,6 @@
 /* eslint-disable no-console */
 const router = require('express').Router();
 const multer = require('multer');
-const mongoose = require('mongoose');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
 const { v1: uuidv1 } = require('uuid');
@@ -279,23 +278,12 @@ router.ws('/saved', async (ws) => {
         ws.send(JSON.stringify(favourites));
       } else ws.send(JSON.stringify([]));
 
-      // watch user collection
-      const pipeline = [{
-        $match: {
-          operationType: 'update',
-          'fullDocument._id': mongoose.Types.ObjectId(obj.userId),
-        },
-      }];
-      const options = { fullDocument: 'updateLookup' };
-      // register change stream
-      const changeStream = User.watch(pipeline, options);
-      changeStream.on('change', async (data) => {
-        const favourites = [];
+      // listen for events
+      favEmitter.on('done', (favs) => {
+        let favourites = [];
+        favourites = favs;
 
-        data.fullDocument.favourites.forEach((id) => {
-          favourites.push(Listing.findById(id));
-        });
-        ws.send(JSON.stringify(await Promise.all(favourites)));
+        ws.send(JSON.stringify(favourites));
       });
     } else {
       ws.send(JSON.stringify([]));
