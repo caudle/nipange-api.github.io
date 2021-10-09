@@ -4,6 +4,7 @@
 /* eslint-disable no-console */
 const router = require('express').Router();
 const multer = require('multer');
+const mongoose = require('mongoose');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
 const { v1: uuidv1 } = require('uuid');
@@ -77,12 +78,13 @@ router.get('/:id/listings/premium', async (req, res) => {
   try {
     // get user
     const user = await User.findById(req.params.id).populate('listings');
-    const listings = [];
+    let listings = [];
     user.listings.forEach((listing) => {
       if (listing.package.key === 1) {
         listing.push(listing);
       }
     });
+    listings = user.listings;
     return res.status(200).json(listings);
   } catch (err) {
     return res.status(400).json({ error: err });
@@ -228,7 +230,7 @@ router.patch('/saved/:id', async (req, res) => {
     });
 
     // add event
-    const user = await User.findById(req.params.id).populate('favourites');
+    const user = await User.findById(req.params.id);
     favEmitter.emit('done', user.favourites);
     // add likes
     await Listing.updateOne({ _id: req.body.listingId }, {
@@ -249,7 +251,7 @@ router.delete('/saved/:id', async (req, res) => {
       $pull: { favourites: req.body.listingId },
     });
     // add event
-    const user = await User.findById(req.params.id).populate('favourites');
+    const user = await User.findById(req.params.id);
     favEmitter.emit('done', user.favourites);
     // delete likes
     await Listing.updateOne({ _id: req.body.listingId }, {
@@ -278,12 +280,23 @@ router.ws('/saved', async (ws) => {
         ws.send(JSON.stringify(favourites));
       } else ws.send(JSON.stringify([]));
 
-      // listen for events
-      favEmitter.on('done', (favs) => {
-        let favourites = [];
-        favourites = favs;
+      // watch user collection
+      const pipeline = [{
+        $match: {
+          operationType: 'update',
+          'fullDocument._id': mongoose.Types.ObjectId(obj.userId),
+        },
+      }];
+      const options = { fullDocument: 'updateLookup' };
+      // register change stream
+      const changeStream = User.watch(pipeline, options);
+      changeStream.on('change', async (data) => {
+        const favourites = [];
 
-        ws.send(JSON.stringify(favourites));
+        data.fullDocument.favourites.forEach((id) => {
+          favourites.push(Listing.findById(id));
+        });
+        ws.send(JSON.stringify(await Promise.all(favourites)));
       });
     } else {
       ws.send(JSON.stringify([]));
