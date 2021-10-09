@@ -228,7 +228,7 @@ router.patch('/saved/:id', async (req, res) => {
     });
 
     // add event
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).populate('favourites');
     favEmitter.emit('done', user.favourites);
     // add likes
     await Listing.updateOne({ _id: req.body.listingId }, {
@@ -249,7 +249,7 @@ router.delete('/saved/:id', async (req, res) => {
       $pull: { favourites: req.body.listingId },
     });
     // add event
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).populate('favourites');
     favEmitter.emit('done', user.favourites);
     // delete likes
     await Listing.updateOne({ _id: req.body.listingId }, {
