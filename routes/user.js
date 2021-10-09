@@ -77,9 +77,13 @@ router.get('/:id/listing', async (req, res) => {
 router.get('/:id/listings/premium', async (req, res) => {
   try {
     // get user
-    const user = await User.findOne({ _id: req.params.id, 'package.key': 1 }).populate('listings');
-    let listings = [];
-    listings = user.listings;
+    const user = await User.findById(req.params.id).populate('listings');
+    const listings = [];
+    user.listings.forEach((listing) => {
+      if (listing.package.key === 1) {
+        listing.push(listing);
+      }
+    });
     return res.status(200).json(listings);
   } catch (err) {
     return res.status(400).json({ error: err });
