@@ -111,9 +111,10 @@ router.patch('/dp/:id', uploadDp.single('dp'), async (req, res) => {
       });
     }
 
-    // update dp
+    // get url & update dp
+    const url = `${req.file.location.slice(0, 29)}cdn.${req.file.location.slice(29)}`;
     await User.updateOne({ _id: req.params.id }, {
-      $set: { dp: req.file.location },
+      $set: { dp: url },
     });
     // get update user
     const updatedUser = await User.findById(req.params.id);

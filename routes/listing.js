@@ -207,10 +207,8 @@ router.patch('/photos/:id', uploadImages.array('images', 4), async (req, res) =>
     // fill the array with paths
 
     req.files.forEach((image) => {
-      photos.push(image.location);
-      console.log(image.location);
-      const test = `${image.location.slice(0, 27)}cdn.${image.location.slice(27)}`;
-      console.log(test);
+      const url = `${image.location.slice(0, 29)}cdn.${image.location.slice(29)}`;
+      photos.push(url);
     });
     await Listing.updateOne({ _id: req.params.id }, {
       $addToSet: { photos },
@@ -270,7 +268,8 @@ router.patch('/videos/:id', uploadVideos.array('videos', 2), async (req, res) =>
     const videos = [];
     // fill the array with paths
     req.files.forEach((video) => {
-      videos.push(video.location);
+      const url = `${video.location.slice(0, 29)}cdn.${video.location.slice(29)}`;
+      videos.push(url);
     });
     // updt listing
     await Listing.updateOne({ _id: req.params.id }, {
