@@ -208,6 +208,9 @@ router.patch('/photos/:id', uploadImages.array('images', 4), async (req, res) =>
 
     req.files.forEach((image) => {
       photos.push(image.location);
+      console.log(image.location);
+      const test = `${image.location.slice(0, 27)}cdn.${image.location.slice(27)}`;
+      console.log(test);
     });
     await Listing.updateOne({ _id: req.params.id }, {
       $addToSet: { photos },
