@@ -112,7 +112,7 @@ router.patch('/dp/:id', uploadDp.single('dp'), async (req, res) => {
     }
 
     // get url & update dp
-    const url = `${req.file.location.slice(0, 27)}cdn.${req.file.location.slice(27)}`;
+    const url = `${req.file.location.slice(0, 28)}cdn.${req.file.location.slice(28)}`;
     await User.updateOne({ _id: req.params.id }, {
       $set: { dp: url },
     });
