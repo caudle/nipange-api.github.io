@@ -100,10 +100,9 @@ const detailsWs = new WebSocketServer({ noServer: true });
 const reviewsWs = new WebSocketServer({ noServer: true });
 
 existsWs.on('connection', (ws) => {
-  console.log(ws);
+  
   ws.on('message', async (msg) => {
     const obj = JSON.parse(msg);
-    console.log(obj);
     if (obj.userId.match(/^[0-9a-fA-F]{24}$/)) {
       // check for user normally first when user visists the uri
       const user = await User.findById(obj.userId);
@@ -127,11 +126,11 @@ existsWs.on('connection', (ws) => {
 });
 
 savedWs.on('connection', (ws) => {
-  console.log(ws);
+  
   ws.on('message', async (msg) => {
     // parse msg
     const obj = JSON.parse(msg);
-    console.log('parsed msg: %s', obj);
+    
     // if valid id
     if (obj.userId.match(/^[0-9a-fA-F]{24}$/)) {
       // do it noirmally when user first access the uri
@@ -170,7 +169,7 @@ savedWs.on('connection', (ws) => {
 detailsWs.on('connection', (ws) => {
   ws.on('message', async (msg) => {
     const obj = JSON.parse(msg);
-    console.log(obj);
+    
     if (obj.userId.match(/^[0-9a-fA-F]{24}$/)) {
       // check for user normally first when user visists the uri
       const user = await User.findById(obj.userId);
@@ -194,7 +193,7 @@ detailsWs.on('connection', (ws) => {
 });
 
 reviewsWs.on('connection', (ws) => {
-  console.log('websocket inititaed');
+  
   ws.on('message', async (msg) => {
     const obj = JSON.parse(msg);
     console.log(obj.id);
@@ -204,7 +203,7 @@ reviewsWs.on('connection', (ws) => {
     if (obj.id.match(/^[0-9a-fA-F]{24}$/)) {
       // do it normal
       const reviews = await Review.find({ listing: mongoose.Types.ObjectId(obj.id) });
-      console.log(reviews);
+      
       if (reviews) {
         // send
         ws.send(JSON.stringify(reviews));
@@ -274,8 +273,8 @@ cron.schedule('59 23 * * *', async () => {
     }
   }
 });
+
 // start server and listen
 server.listen(process.env.PORT || 3000, (err) => {
-  if (err) console.log(err);
-  console.log(`server is running at port ${process.env.PORT || 3000}`);
+  if (err) throw err;
 });

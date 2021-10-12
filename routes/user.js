@@ -1,13 +1,12 @@
 /* eslint-disable consistent-return */
 /* eslint-disable prefer-template */
 /* eslint-disable no-underscore-dangle */
-/* eslint-disable no-console */
+
 import express from 'express';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import { v1 as uuidv1 } from 'uuid';
 import AWS from 'aws-sdk';
-// import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Listing from '../models/Listing.js';
 import favEmitter from '../events/myevents.js';
@@ -169,61 +168,6 @@ router.patch('/type/:id', async (req, res) => {
   }
 });
 
-// check if saved for a listing item
-/* router.ws('/saved/exists', async (ws) => {
-  ws.on('message', async (msg) => {
-    const obj = JSON.parse(msg);
-    console.log(obj);
-    if (obj.userId.match(/^[0-9a-fA-F]{24}$/)) {
-      // check for user normally first when user visists the uri
-      const user = await User.findById(obj.userId);
-      if (user) {
-        const exists = user.favourites.includes(obj.listingId);
-
-        ws.send(JSON.stringify(exists));
-      } else {
-        ws.send(JSON.stringify(false));
-      }
-      // listen to event
-      favEmitter.on('done', (favs) => {
-        const exists = favs.includes(obj.listingId);
-
-        ws.send(JSON.stringify(exists));
-      });
-    } else {
-      ws.send(JSON.stringify(false));
-    }
-  });
-}); */
-
-// we differentiate btn the two cause of errors we got
-// check if saved for details page
-/* router.ws('/saved/exists/details', async (ws) => {
-  ws.on('message', async (msg) => {
-    const obj = JSON.parse(msg);
-    console.log(obj);
-    if (obj.userId.match(/^[0-9a-fA-F]{24}$/)) {
-      // check for user normally first when user visists the uri
-      const user = await User.findById(obj.userId);
-      if (user) {
-        const exists = user.favourites.includes(obj.listingId);
-
-        ws.send(JSON.stringify(exists));
-      } else {
-        ws.send(JSON.stringify(false));
-      }
-      // listen to event
-      favEmitter.on('done', (favs) => {
-        const exists = favs.includes(obj.listingId);
-
-        ws.send(JSON.stringify(exists));
-      });
-    } else {
-      ws.send(JSON.stringify(false));
-    }
-  });
-}); */
-
 // add fav listing
 router.patch('/saved/:id', async (req, res) => {
   try {
@@ -265,46 +209,6 @@ router.delete('/saved/:id', async (req, res) => {
   }
 });
 
-// get all saved
-/* router.ws('/saved', async (ws) => {
-  ws.on('message', async (msg) => {
-    // parse msg
-    const obj = JSON.parse(msg);
-    console.log('parsed msg: %s', obj);
-    // if valid id
-    if (obj.userId.match(/^[0-9a-fA-F]{24}$/)) {
-      // do it noirmally when user first access the uri
-      const user = await User.findOne({ _id: obj.userId }).populate('favourites');
-
-      if (user) {
-        let favourites = [];
-        favourites = user.favourites;
-        ws.send(JSON.stringify(favourites));
-      } else ws.send(JSON.stringify([]));
-
-      // watch user collection
-      const pipeline = [{
-        $match: {
-          operationType: 'update',
-          'fullDocument._id': mongoose.Types.ObjectId(obj.userId),
-        },
-      }];
-      const options = { fullDocument: 'updateLookup' };
-      // register change stream
-      const changeStream = User.watch(pipeline, options);
-      changeStream.on('change', async (data) => {
-        const favourites = [];
-
-        data.fullDocument.favourites.forEach((id) => {
-          favourites.push(Listing.findById(id));
-        });
-        ws.send(JSON.stringify(await Promise.all(favourites)));
-      });
-    } else {
-      ws.send(JSON.stringify([]));
-    }
-  });
-}); */
 
 // get user package
 router.get('/:id/package', async (req, res) => {

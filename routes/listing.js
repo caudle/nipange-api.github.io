@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable consistent-return */
 import express from 'express';

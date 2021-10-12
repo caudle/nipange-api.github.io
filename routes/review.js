@@ -1,6 +1,6 @@
 /* eslint-disable prefer-template */
 /* eslint-disable no-underscore-dangle */
-/* eslint-disable no-console */
+
 import express from 'express';
 import Review from '../models/Review.js';
 import Listing from '../models/Listing.js';
@@ -23,31 +23,6 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: err });
   }
 });
-
-// get all reviews for a listing
-/* router.ws('/', async (ws) => {
-  console.log('websocket inititaed');
-  ws.on('message', async (msg) => {
-    const obj = JSON.parse(msg);
-    console.log(obj.id);
-    // store reviews
-    // const reviews = [];
-    // check if id is objectId
-    if (obj.id.match(/^[0-9a-fA-F]{24}$/)) {
-      // do it normal
-      const reviews = await Review.find({ listing: mongoose.Types.ObjectId(obj.id) });
-      console.log(reviews);
-      if (reviews) {
-        // send
-        ws.send(JSON.stringify(reviews));
-      } else {
-        ws.send(JSON.stringify([]));
-      }
-    } else {
-      ws.send(JSON.stringify([]));
-    }
-  });
-}); */
 
 // store user review
 router.post('/:userId', async (req, res) => {
