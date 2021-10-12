@@ -220,15 +220,15 @@ reviewsWs.on('connection', (ws) => {
 server.on('upgrade', (request, socket, head) => {
   const { pathname } = parse(request.url);
 
-  if (pathname === '/user/savedWs/existsWs') {
+  if (pathname === '/user/saved/exists') {
     existsWs.handleUpgrade(request, socket, head, (ws) => {
       existsWs.emit('connection', ws, request);
     });
-  } else if (pathname === '/user/savedWs/existsWs/detailsWs') {
+  } else if (pathname === '/user/saved/exists/details') {
     detailsWs.handleUpgrade(request, socket, head, (ws) => {
       detailsWs.emit('connection', ws, request);
     });
-  } else if (pathname === '/user/savedWs') {
+  } else if (pathname === '/user/saved') {
     savedWs.handleUpgrade(request, socket, head, (ws) => {
       savedWs.emit('connection', ws, request);
     });
