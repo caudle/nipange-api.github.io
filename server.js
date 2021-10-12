@@ -35,7 +35,7 @@ import Review from './models/Review.js';
 import favEmitter from './events/myevents.js';
 
 // connect to db
-/* mongoose.connect(process.env.DATABASE_URL,
+mongoose.connect(process.env.DATABASE_URL,
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -45,7 +45,7 @@ import favEmitter from './events/myevents.js';
   (err) => {
     if (err)console.log(err);
     console.log(`database connected: ${process.env.DATABASE_URL}`);
-  }); */
+  });
 
 const app = express();
 
