@@ -1,5 +1,7 @@
-const router = require('express').Router();
-const Filter = require('../models/Filter');
+import express from 'express';
+import Filter from '../models/Filter.js';
+
+const router = express.Router();
 
 // get all
 router.get('/', async (req, res) => {
@@ -68,4 +70,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 // export
-module.exports = router;
+export default router;

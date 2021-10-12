@@ -1,11 +1,19 @@
 /* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable consistent-return */
-const router = require('express').Router();
-const multer = require('multer');
-const multerS3 = require('multer-s3');
-const { v1: uuidv1 } = require('uuid');
-const AWS = require('aws-sdk');
+import express from 'express';
+import multer from 'multer';
+import multerS3 from 'multer-s3';
+import { v1 as uuidv1 } from 'uuid';
+import AWS from 'aws-sdk';
+import Listing from '../models/Listing.js';
+import User from '../models/User.js';
+import {
+  validatePropertyType, validateLocation, validateAmenities,
+  validatePrice,
+} from './validation.js';
+
+const router = express.Router();
 
 const spacesEndpoint = new AWS.Endpoint('fra1.digitaloceanspaces.com');
 const s3 = new AWS.S3({
@@ -13,13 +21,6 @@ const s3 = new AWS.S3({
   accessKeyId: process.env.SPACES_KEY,
   secretAccessKey: process.env.SPACES_SECRET,
 });
-
-const {
-  validatePropertyTYpe, validateLocation, validateAmenities,
-  validatePrice,
-} = require('./validation');
-const Listing = require('../models/Listing');
-const User = require('../models/User');
 
 const imageFilter = (req, file, callback) => {
   callback(null, true);
@@ -84,7 +85,7 @@ router.get('/:type', async (req, res) => {
 router.post('/property', async (req, res) => {
   const completed = 1;
   // validate details
-  const { error } = validatePropertyTYpe(req.body);
+  const { error } = validatePropertyType(req.body);
   if (error) return res.status(400).json({ error: error.details[0].message });
   try {
     // if listing already exist, only upadte it
@@ -483,4 +484,4 @@ router.patch('/views/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

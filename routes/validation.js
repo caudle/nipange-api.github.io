@@ -1,7 +1,7 @@
-const joi = require('@hapi/joi');
+import joi from '@hapi/joi';
 
 // validate register
-const validateRegister = (data) => {
+export const validateRegister = (data) => {
   const schema = joi.object({
     phone: joi.string().min(10),
     email: joi.string().min(4).email(),
@@ -18,7 +18,7 @@ const validateRegister = (data) => {
 };
 
 // validate login
-const validateLogin = (data) => {
+export const validateLogin = (data) => {
   const schema = joi.object({
     login: joi.string().min(2).required(),
     password: joi.string().min(6).required(),
@@ -27,7 +27,7 @@ const validateLogin = (data) => {
 };
 
 // validate property type
-const validatePropertyType = (data) => {
+export const validatePropertyType = (data) => {
   const schema = joi.object({
     name: joi.string().required(),
     propertyType: joi.string(),
@@ -42,7 +42,7 @@ const validatePropertyType = (data) => {
 };
 
 // validate loc
-const validateLocation = (data) => {
+export const validateLocation = (data) => {
   const schema = joi.object({
     location: joi.object(),
   });
@@ -50,7 +50,7 @@ const validateLocation = (data) => {
 };
 
 // validate aments
-const validateAmenities = (data) => {
+export const validateAmenities = (data) => {
   const schema = joi.object({
     amenities: joi.array(),
   });
@@ -58,7 +58,7 @@ const validateAmenities = (data) => {
 };
 
 // validt prcng and desc
-const validatePrice = (data) => {
+export const validatePrice = (data) => {
   const schema = joi.object({
     price: joi.number(),
     description: joi.string(),
@@ -67,10 +67,3 @@ const validatePrice = (data) => {
   });
   return schema.validate(data);
 };
-
-module.exports.validateRegister = validateRegister;
-module.exports.validateLogin = validateLogin;
-module.exports.validatePropertyTYpe = validatePropertyType;
-module.exports.validateLocation = validateLocation;
-module.exports.validateAmenities = validateAmenities;
-module.exports.validatePrice = validatePrice;

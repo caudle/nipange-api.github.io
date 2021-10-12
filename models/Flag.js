@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const flagSchema = mongoose.Schema({
   value: {
@@ -11,4 +11,4 @@ const flagSchema = mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('Flag', flagSchema);
+export default mongoose.model('Flag', flagSchema);

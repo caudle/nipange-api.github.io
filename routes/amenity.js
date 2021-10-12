@@ -1,8 +1,10 @@
 /* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable consistent-return */
-const router = require('express').Router();
-const Amenity = require('../models/Amenity');
+import express from 'express';
+import Amenity from '../models/Amenity.js';
+
+const router = express.Router();
 
 // get all amenities
 router.get('/', async (req, res) => {
@@ -50,4 +52,4 @@ router.patch('/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

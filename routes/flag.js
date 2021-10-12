@@ -1,5 +1,7 @@
-const router = require('express').Router();
-const Flag = require('../models/Flag');
+import express from 'express';
+import Flag from '../models/Flag.js';
+
+const router = express.Router();
 
 // get flags
 router.get('/', async (req, res) => {
@@ -30,4 +32,4 @@ router.post('/', async (req, res) => {
 });
 
 // export
-module.exports = router;
+export default router;

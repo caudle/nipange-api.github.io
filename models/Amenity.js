@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const amenitySchema = mongoose.Schema({
   name: {
@@ -11,4 +11,4 @@ const amenitySchema = mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('Amenity', amenitySchema);
+export default mongoose.model('Amenity', amenitySchema);

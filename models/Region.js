@@ -1,5 +1,5 @@
 /* eslint-disable linebreak-style */
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const RegionSchema = mongoose.Schema({
   regionName: { type: String, required: true },
@@ -16,4 +16,4 @@ const RegionSchema = mongoose.Schema({
 
 });
 
-module.exports = mongoose.model('Regions', RegionSchema);
+export default mongoose.model('Regions', RegionSchema);

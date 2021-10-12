@@ -4,8 +4,8 @@
 
 // favs eventv emitter
 
-const events = require('events');
+import events from 'events';
 
 const favEmitter = new events.EventEmitter();
 
-module.exports = favEmitter;
+export default favEmitter;

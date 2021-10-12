@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const filterSchema = mongoose.Schema({
   name: {
@@ -15,4 +15,4 @@ const filterSchema = mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('Filter', filterSchema);
+export default mongoose.model('Filter', filterSchema);

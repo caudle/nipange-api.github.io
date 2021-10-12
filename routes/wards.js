@@ -1,9 +1,11 @@
 /* eslint-disable linebreak-style */
 /* eslint-disable no-underscore-dangle */
 
-const router = require('express').Router();
-const District = require('../models/District');
-const Ward = require('../models/Ward');
+import express from 'express';
+import District from '../models/District.js';
+import Ward from '../models/Ward.js';
+
+const router = express.Router();
 
 // get all wards
 router.get('/', async (req, res) => {
@@ -86,4 +88,4 @@ router.get('/:id/streets', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

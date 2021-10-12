@@ -1,11 +1,10 @@
-const router = require('express').Router();
+import express from 'express';
+import multer from 'multer';
+import fs from 'fs'; // file system
+import { promisify } from 'util';
+import Category from '../models/Category.js';
 
-const multer = require('multer');
-
-const fs = require('fs'); // file syst
-const { promisify } = require('util');
-
-const Category = require('../models/Category');
+const router = express.Router();
 
 const unlinkAsync = promisify(fs.unlink);
 
@@ -86,4 +85,4 @@ router.delete('/:id', async (req, res) => {
     return res.status(400).json({ error: err });
   }
 });
-module.exports = router;
+export default router;

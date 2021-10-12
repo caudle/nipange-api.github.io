@@ -1,5 +1,5 @@
 /* eslint-disable linebreak-style */
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const DistrictSchema = mongoose.Schema({
   districtName: { type: String, required: true },
@@ -16,4 +16,4 @@ const DistrictSchema = mongoose.Schema({
 
 });
 
-module.exports = mongoose.model('Districts', DistrictSchema);
+export default mongoose.model('Districts', DistrictSchema);

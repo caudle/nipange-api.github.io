@@ -1,7 +1,8 @@
 /* eslint-disable linebreak-style */
+import express from 'express';
+import Country from '../models/Country.js';
 
-const router = require('express').Router();
-const Country = require('../models/Country');
+const router = express.Router();
 
 // get all countries
 router.get('/', async (req, res) => {
@@ -56,4 +57,4 @@ router.get('/:id/regions', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

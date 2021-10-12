@@ -1,5 +1,5 @@
 /* eslint-disable linebreak-style */
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const StreetSchema = mongoose.Schema({
   streetsName: { type: String, required: true },
@@ -11,4 +11,4 @@ const StreetSchema = mongoose.Schema({
 
 });
 
-module.exports = mongoose.model('Streets', StreetSchema);
+export default mongoose.model('Streets', StreetSchema);

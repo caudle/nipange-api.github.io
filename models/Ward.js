@@ -1,5 +1,5 @@
 /* eslint-disable linebreak-style */
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const WardSchema = mongoose.Schema({
   wardName: { type: String, required: true },
@@ -16,4 +16,4 @@ const WardSchema = mongoose.Schema({
 
 });
 
-module.exports = mongoose.model('Wards', WardSchema);
+export default mongoose.model('Wards', WardSchema);

@@ -2,16 +2,17 @@
 /* eslint-disable prefer-template */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
-const router = require('express').Router();
-const multer = require('multer');
-const mongoose = require('mongoose');
-const multerS3 = require('multer-s3');
-const AWS = require('aws-sdk');
-const { v1: uuidv1 } = require('uuid');
+import express from 'express';
+import multer from 'multer';
+import multerS3 from 'multer-s3';
+import { v1 as uuidv1 } from 'uuid';
+import AWS from 'aws-sdk';
+// import mongoose from 'mongoose';
+import User from '../models/User.js';
+import Listing from '../models/Listing.js';
+import favEmitter from '../events/myevents.js';
 
-const User = require('../models/User');
-const Listing = require('../models/Listing');
-const favEmitter = require('../events/myevents');
+const router = express.Router();
 
 const spacesEndpoint = new AWS.Endpoint('fra1.digitaloceanspaces.com');
 const s3 = new AWS.S3({
@@ -169,7 +170,7 @@ router.patch('/type/:id', async (req, res) => {
 });
 
 // check if saved for a listing item
-router.ws('/saved/exists', async (ws) => {
+/* router.ws('/saved/exists', async (ws) => {
   ws.on('message', async (msg) => {
     const obj = JSON.parse(msg);
     console.log(obj);
@@ -193,11 +194,11 @@ router.ws('/saved/exists', async (ws) => {
       ws.send(JSON.stringify(false));
     }
   });
-});
+}); */
 
 // we differentiate btn the two cause of errors we got
 // check if saved for details page
-router.ws('/saved/exists/details', async (ws) => {
+/* router.ws('/saved/exists/details', async (ws) => {
   ws.on('message', async (msg) => {
     const obj = JSON.parse(msg);
     console.log(obj);
@@ -221,7 +222,7 @@ router.ws('/saved/exists/details', async (ws) => {
       ws.send(JSON.stringify(false));
     }
   });
-});
+}); */
 
 // add fav listing
 router.patch('/saved/:id', async (req, res) => {
@@ -265,7 +266,7 @@ router.delete('/saved/:id', async (req, res) => {
 });
 
 // get all saved
-router.ws('/saved', async (ws) => {
+/* router.ws('/saved', async (ws) => {
   ws.on('message', async (msg) => {
     // parse msg
     const obj = JSON.parse(msg);
@@ -303,7 +304,7 @@ router.ws('/saved', async (ws) => {
       ws.send(JSON.stringify([]));
     }
   });
-});
+}); */
 
 // get user package
 router.get('/:id/package', async (req, res) => {
@@ -318,4 +319,4 @@ router.get('/:id/package', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

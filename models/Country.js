@@ -1,6 +1,6 @@
 /* eslint-disable linebreak-style */
 
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const CountrySchema = mongoose.Schema({
   countryName: {
@@ -14,4 +14,4 @@ const CountrySchema = mongoose.Schema({
 
 });
 
-module.exports = mongoose.model('Countrys', CountrySchema);
+export default mongoose.model('Countrys', CountrySchema);

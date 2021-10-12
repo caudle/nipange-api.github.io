@@ -1,10 +1,11 @@
 /* eslint-disable prefer-template */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
-const router = require('express').Router();
-const mongoose = require('mongoose');
-const Review = require('../models/Review');
-const Listing = require('../models/Listing');
+import express from 'express';
+import Review from '../models/Review.js';
+import Listing from '../models/Listing.js';
+
+const router = express.Router();
 
 // to be removed
 // get all reviews
@@ -24,7 +25,7 @@ router.post('/', async (req, res) => {
 });
 
 // get all reviews for a listing
-router.ws('/', async (ws) => {
+/* router.ws('/', async (ws) => {
   console.log('websocket inititaed');
   ws.on('message', async (msg) => {
     const obj = JSON.parse(msg);
@@ -46,7 +47,7 @@ router.ws('/', async (ws) => {
       ws.send(JSON.stringify([]));
     }
   });
-});
+}); */
 
 // store user review
 router.post('/:userId', async (req, res) => {
@@ -71,4 +72,4 @@ router.post('/:userId', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

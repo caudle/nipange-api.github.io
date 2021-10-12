@@ -2,28 +2,40 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
-const express = require('express');
+import express from 'express';
+import http from 'http';
+import { WebSocketServer } from 'ws';
+import { parse } from 'url';
+import cron from 'node-cron';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import verifyToken from './routes/verifyToken.js';
 
-const app = express();
+// import routes
+import authRoutes from './routes/auth.js';
+import listingRoutes from './routes/listing.js';
+import userRoutes from './routes/user.js';
+import categoryRoutes from './routes/category.js';
+import reviewRoutes from './routes/review.js';
+import packageRoutes from './routes/package.js';
+import reportRoutes from './routes/report.js';
+import flagRoutes from './routes/flag.js';
+import filterRoutes from './routes/filter.js';
+import countryRoutes from './routes/countrys.js';
+import regionRoutes from './routes/regions.js';
+import districtRoutes from './routes/districts.js';
+import wardRoutes from './routes/wards.js';
+import streetRoutes from './routes/streets.js';
+import amenityRoutes from './routes/amenity.js';
+import Listing from './models/Listing.js';
+import User from './models/User.js';
+import Review from './models/Review.js';
 
-// eslint-disable-next-line no-unused-vars
-const expressWs = require('express-ws')(app);
-
-const cron = require('node-cron');
-
-const cors = require('cors');
-
-// eslint-disable-next-line no-unused-vars
-const mongoose = require('mongoose');
-
-const dotEnv = require('dotenv');
-
-const Listing = require('./models/Listing');
-
-dotEnv.config();
+import favEmitter from './events/myevents.js';
 
 // connect to db
-mongoose.connect(process.env.DATABASE_URL,
+/* mongoose.connect(process.env.DATABASE_URL,
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -33,42 +45,18 @@ mongoose.connect(process.env.DATABASE_URL,
   (err) => {
     if (err)console.log(err);
     console.log(`database connected: ${process.env.DATABASE_URL}`);
-  });
+  }); */
 
-// import routes
-const authRoutes = require('./routes/auth');
-const listingRoutes = require('./routes/listing');
-const userRoutes = require('./routes/user');
-const categoryRoutes = require('./routes/category');
-const reviewRoutes = require('./routes/review');
-const packageRoutes = require('./routes/package');
-const reportRoutes = require('./routes/report');
-const flagRoutes = require('./routes/flag');
-const filterRoutes = require('./routes/filter');
-const countryRoutes = require('./routes/countrys');
-const regionRoutes = require('./routes/regions');
-const districtRoutes = require('./routes/districts');
-const wardRoutes = require('./routes/wards');
-const streetRoutes = require('./routes/streets');
-const amenityRoutes = require('./routes/amenity');
+const app = express();
 
-// verify token
-const verifyToken = (req, res, next) => {
-  const bearerHeader = req.headers.authorization;
-  console.log(`header: ${bearerHeader}`);
-  if (typeof bearerHeader !== 'undefined') {
-    const splits = bearerHeader.split(' ');
-    const bearerToken = splits[1];
-    console.log(`token: ${bearerToken}`);
-    if (bearerToken === process.env.API_KEY) {
-      next();
-    } else {
-      res.status(403).json({ error: 'invalid token' });
-    }
-  } else {
-    res.status(403).json({ error: 'invalid token' });
-  }
-};
+const server = http.createServer(app);
+
+// eslint-disable-next-line no-unused-vars
+// const expressWs = require('express-ws')(app);
+
+// eslint-disable-next-line no-unused-vars
+
+dotenv.config();
 
 // api middlewares
 
@@ -105,6 +93,154 @@ app.use('/public/videos', express.static('public/videos'));
 app.use('/public/dp', express.static('public/dp'));
 app.use('/public/category', express.static('public/category'));
 
+// websockets
+const existsWs = new WebSocketServer({ noServer: true });
+const savedWs = new WebSocketServer({ noServer: true });
+const detailsWs = new WebSocketServer({ noServer: true });
+const reviewsWs = new WebSocketServer({ noServer: true });
+
+existsWs.on('connection', (ws) => {
+  console.log(ws);
+  ws.on('message', async (msg) => {
+    const obj = JSON.parse(msg);
+    console.log(obj);
+    if (obj.userId.match(/^[0-9a-fA-F]{24}$/)) {
+      // check for user normally first when user visists the uri
+      const user = await User.findById(obj.userId);
+      if (user) {
+        const exists = user.favourites.includes(obj.listingId);
+
+        ws.send(JSON.stringify(exists));
+      } else {
+        ws.send(JSON.stringify(false));
+      }
+      // listen to event
+      favEmitter.on('done', (favs) => {
+        const exists = favs.includes(obj.listingId);
+
+        ws.send(JSON.stringify(exists));
+      });
+    } else {
+      ws.send(JSON.stringify(false));
+    }
+  });
+});
+
+savedWs.on('connection', (ws) => {
+  console.log(ws);
+  ws.on('message', async (msg) => {
+    // parse msg
+    const obj = JSON.parse(msg);
+    console.log('parsed msg: %s', obj);
+    // if valid id
+    if (obj.userId.match(/^[0-9a-fA-F]{24}$/)) {
+      // do it noirmally when user first access the uri
+      const user = await User.findOne({ _id: obj.userId }).populate('favourites');
+
+      if (user) {
+        let favourites = [];
+        favourites = user.favourites;
+        ws.send(JSON.stringify(favourites));
+      } else ws.send(JSON.stringify([]));
+
+      // watch user collection
+      const pipeline = [{
+        $match: {
+          operationType: 'update',
+          'fullDocument._id': mongoose.Types.ObjectId(obj.userId),
+        },
+      }];
+      const options = { fullDocument: 'updateLookup' };
+      // register change stream
+      const changeStream = User.watch(pipeline, options);
+      changeStream.on('change', async (data) => {
+        const favourites = [];
+
+        data.fullDocument.favourites.forEach((id) => {
+          favourites.push(Listing.findById(id));
+        });
+        ws.send(JSON.stringify(await Promise.all(favourites)));
+      });
+    } else {
+      ws.send(JSON.stringify([]));
+    }
+  });
+});
+
+detailsWs.on('connection', (ws) => {
+  ws.on('message', async (msg) => {
+    const obj = JSON.parse(msg);
+    console.log(obj);
+    if (obj.userId.match(/^[0-9a-fA-F]{24}$/)) {
+      // check for user normally first when user visists the uri
+      const user = await User.findById(obj.userId);
+      if (user) {
+        const exists = user.favourites.includes(obj.listingId);
+
+        ws.send(JSON.stringify(exists));
+      } else {
+        ws.send(JSON.stringify(false));
+      }
+      // listen to event
+      favEmitter.on('done', (favs) => {
+        const exists = favs.includes(obj.listingId);
+
+        ws.send(JSON.stringify(exists));
+      });
+    } else {
+      ws.send(JSON.stringify(false));
+    }
+  });
+});
+
+reviewsWs.on('connection', (ws) => {
+  console.log('websocket inititaed');
+  ws.on('message', async (msg) => {
+    const obj = JSON.parse(msg);
+    console.log(obj.id);
+    // store reviewsWs
+    // const reviewsWs = [];
+    // check if id is objectId
+    if (obj.id.match(/^[0-9a-fA-F]{24}$/)) {
+      // do it normal
+      const reviews = await Review.find({ listing: mongoose.Types.ObjectId(obj.id) });
+      console.log(reviews);
+      if (reviews) {
+        // send
+        ws.send(JSON.stringify(reviews));
+      } else {
+        ws.send(JSON.stringify([]));
+      }
+    } else {
+      ws.send(JSON.stringify([]));
+    }
+  });
+});
+
+server.on('upgrade', (request, socket, head) => {
+  const { pathname } = parse(request.url);
+
+  if (pathname === '/user/savedWs/existsWs') {
+    existsWs.handleUpgrade(request, socket, head, (ws) => {
+      existsWs.emit('connection', ws, request);
+    });
+  } else if (pathname === '/user/savedWs/existsWs/detailsWs') {
+    detailsWs.handleUpgrade(request, socket, head, (ws) => {
+      detailsWs.emit('connection', ws, request);
+    });
+  } else if (pathname === '/user/savedWs') {
+    savedWs.handleUpgrade(request, socket, head, (ws) => {
+      savedWs.emit('connection', ws, request);
+    });
+  } else if (pathname === '/review') {
+    reviewsWs.handleUpgrade(request, socket, head, (ws) => {
+      reviewsWs.emit('connection', ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
+});
+
 // change listing plans evry day at 23 59
 cron.schedule('59 23 * * *', async () => {
   console.log('Running Cron Job');
@@ -139,7 +275,7 @@ cron.schedule('59 23 * * *', async () => {
   }
 });
 // start server and listen
-app.listen(process.env.PORT || 3000, (err) => {
+server.listen(process.env.PORT || 3000, (err) => {
   if (err) console.log(err);
   console.log(`server is running at port ${process.env.PORT || 3000}`);
 });

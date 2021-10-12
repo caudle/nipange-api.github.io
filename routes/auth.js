@@ -1,19 +1,16 @@
 /* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable consistent-return */
-const router = require('express').Router();
+import express from 'express';
+import bycrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+import nodemailer from 'nodemailer';
+import { validateRegister, validateLogin } from './validation.js';
+import User from '../models/User.js';
 
-const bycrypt = require('bcryptjs');
+const router = express.Router();
 
-const nodemailer = require('nodemailer');
-
-const dotEnv = require('dotenv');
-
-const { validateRegister, validateLogin } = require('./validation');
-
-const User = require('../models/User');
-
-dotEnv.config();
+dotenv.config();
 
 // register user
 router.post('/register', async (req, res) => {
@@ -205,7 +202,7 @@ router.get('/verifyEmail/:id/:email', async (req, res) => {
       from: process.env.COMPANY_EMAIL,
       to: email,
       subject: 'Verify email address',
-      text: `click this link to verify your email address http://10.0.2.2:3000/api/user/auth/reset/?id=${user._id}`,
+      text: `click this link to verify your email address https://admin.nipange.com/verifyEmail/?id=${user._id}`,
     };
     await transporter.sendMail(mailOptions);
     return res.status(200).json('ok');
@@ -215,6 +212,18 @@ router.get('/verifyEmail/:id/:email', async (req, res) => {
   }
 });
 
+// confirm email
+router.get('/confirmEmail/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedUser = await User.updateOne({ _id: id }, {
+      $set: { isEmailVerified: true },
+    });
+    return res.status(200).json(updatedUser);
+  } catch (error) {
+    return res.status(400).json({ error });
+  }
+});
 // verify phone
 router.patch('/verifyPhone/:id', async (req, res) => {
   try {
@@ -249,4 +258,4 @@ router.get('/isPhoneVerified/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

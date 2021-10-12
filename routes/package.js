@@ -1,5 +1,7 @@
-const router = require('express').Router();
-const Package = require('../models/Package');
+import express from 'express';
+import Package from '../models/Package.js';
+
+const router = express.Router();
 
 // get packages
 router.get('/', async (req, res) => {
@@ -30,4 +32,4 @@ router.post('/', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
