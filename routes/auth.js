@@ -127,20 +127,21 @@ router.get('/forgotPassword/:email', async (req, res) => {
   // try to send email
   try {
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      secure: false,
-      port: 25,
+      host: 'nipange.com',
+      
+      secure: true,
+      port: 465,
       auth: {
-        user: process.env.COMPANY_EMAIL,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.NOREPLY_EMAIL,
+        pass: process.env.NOREPLY_PASS,
       },
-      tls: { rejectUnauthorized: false },
+      
     });
     const mailOptions = {
-      from: process.env.COMPANY_EMAIL,
+      from: process.env.NOREPLY_EMAIL,
       to: req.params.email,
       subject: 'Reset password email',
-      text: `click this link to reset password http://10.0.2.2:3000/api/user/auth/reset/?id=${user._id}`,
+      text: `click this link to reset password https://admin.nipange.com/auth/reset/?id=${user._id}`,
     };
     await transporter.sendMail(mailOptions);
     return res.status(200).json('ok');
