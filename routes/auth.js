@@ -127,7 +127,7 @@ router.get('/forgotPassword/:email', async (req, res) => {
   // try to send email
   try {
     const transporter = nodemailer.createTransport({
-      host: 'nipange.com',
+      host: 'smtp.nipange.com',
       
       secure: true,
       port: 465,
