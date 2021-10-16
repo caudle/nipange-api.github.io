@@ -173,7 +173,7 @@ router.get('/forgotPassword/:email', async (req, res) => {
 
 // change user password
 router.post('/changePassword/:userId', async (req, res) => {
-  if (!(obj.userId.match(/^[0-9a-fA-F]{24}$/))) return res.status(400).json({ error: 'invalid user id' });
+  if (!(req.params.userId.match(/^[0-9a-fA-F]{24}$/))) return res.status(400).json({ error: 'invalid user id' });
   // check if user exists
   const user = await User.findOne({ _id: req.params.userId });
   console.log(req.body.password);
