@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
 import { validateRegister, validateLogin } from './validation.js';
 import User from '../models/User.js';
+import hbs from 'nodemailer-express-handlebars';
 
 const router = express.Router();
 
@@ -127,8 +128,7 @@ router.get('/forgotPassword/:email', async (req, res) => {
   // try to send email
   try {
     const transporter = nodemailer.createTransport({
-      host: 'mail.nipange.com',
-      
+      host: 'mail.nipange.com',    
       secure: true,
       port: 465,
       auth: {
@@ -137,17 +137,34 @@ router.get('/forgotPassword/:email', async (req, res) => {
       },
       tls: {
         rejectUnauthorized: false
-       }
-      
+       }     
     });
+
+    const hbsOptions = {
+      viewEngine: {
+        extName: '.hbs',
+        partialsDir: '../views/partials/',
+        layoutsDir: '../views/layouts/',
+        defaultLayout: 'template.hbs'
+      },
+      viewsPath: '../views/emails/',
+      extName: '.hbs'
+    };
+
+    transporter.use('compile', hbs(hbsOptions));
+
     const mailOptions = {
       from: process.env.NOREPLY_EMAIL,
       to: req.params.email,
-      subject: 'Reset password email',
-      text: `click this link to reset password https://admin.nipange.com/auth/reset/?id=${user._id}`,
+      subject: 'Reset your password',
+      context: {
+        id: user._id,
+        name: user.username
+      },
+      template: 'forgot-password'
     };
     await transporter.sendMail(mailOptions);
-    return res.status(200).json('ok');
+    return res.status(200).json('email sent');
   } catch (error) {
     console.log(error);
     return res.status(400).json({ error });
