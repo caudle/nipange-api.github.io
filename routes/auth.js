@@ -9,6 +9,7 @@ import { validateRegister, validateLogin } from './validation.js';
 import User from '../models/User.js';
 import hbs from 'nodemailer-express-handlebars';
 
+
 const router = express.Router();
 
 dotenv.config();
@@ -143,11 +144,11 @@ router.get('/forgotPassword/:email', async (req, res) => {
     const hbsOptions = {
       viewEngine: {
         extName: '.hbs',
-        partialsDir: './views/partials/',
-        layoutsDir: './views/layouts/',
+        partialsDir: '../views/partials/',
+        layoutsDir: '../views/layouts/',
         defaultLayout: 'template.hbs'
       },
-      viewPath: './views/emails/',
+      viewPath: '../views/emails/',
       extName: '.hbs'
     };
 
