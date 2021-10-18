@@ -144,7 +144,7 @@ router.get('/forgotPassword/:email', async (req, res) => {
     const hbsOptions = {
       viewEngine: {
         extName: '.hbs',
-        partialsDir: '../views/partials/',
+        partialsDir: './views/partials/',
         layoutsDir: './views/layouts/',
         defaultLayout: 'template.hbs'
       },
