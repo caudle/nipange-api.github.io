@@ -6,16 +6,48 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Document</title>
         <style>
-            h1 {
-                color: #1db38c,
+            .link-btn {
+                   background-color: #1db38c;
+                   color: white;
+                   padding: 15px 25px;
+                   text-decoration: none;
             }
+            #heart {
+  position: relative;
+  width: 100px;
+  height: 90px;
+  margin-top: 10px;
+}
+
+#heart::before, #heart::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 52px;
+  height: 80px;
+  border-radius: 50px 50px 0 0;
+  background: red;
+}
+
+#heart::before {
+  left: 50px;
+  transform: rotate(-45deg);
+  transform-origin: 0 100%;
+}
+
+#heart::after {
+  left: 0;
+  transform: rotate(45deg);
+  transform-origin: 100% 100%;
+}
         </style>
     </head>
     <body>   
-       <h1>nipange</h1>              
-       {{{body}}}        
+       <p style="color: #1db38c;font-size:50px;">nipange</p>              
+       {{{body}}}
+       <br />        
        <p>Sent with love from nipange</p>
-       <p>Copyright nipange 2021. All right reserved.</p>
-       <p>Dar es Salaam</p>      
+       <div class="heart"></div>
+       <p>Copyright nipange 2021. All right reserved.<br /> Dar es Salaam</p>           
     </body>
 </html>
