@@ -10,6 +10,8 @@ import User from '../models/User.js';
 import hbs from 'nodemailer-express-handlebars';
 import path from 'path';
 
+const __dirname = path.resolve();
+
 const router = express.Router();
 
 dotenv.config();
