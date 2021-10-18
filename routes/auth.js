@@ -8,7 +8,7 @@ import nodemailer from 'nodemailer';
 import { validateRegister, validateLogin } from './validation.js';
 import User from '../models/User.js';
 import hbs from 'nodemailer-express-handlebars';
-
+import path from 'path';
 
 const router = express.Router();
 
@@ -144,7 +144,7 @@ router.get('/forgotPassword/:email', async (req, res) => {
     const hbsOptions = {
       viewEngine: {
         extName: '.hbs',
-        partialsDir: './views/partials/',
+        partialsDir: path.join(__dirname, 'views/partials/'),
         layoutsDir: './views/layouts/',
         defaultLayout: 'template.hbs'
       },
