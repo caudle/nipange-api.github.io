@@ -12,42 +12,38 @@
                    padding: 15px 25px;
                    text-decoration: none;
             }
-            #heart {
-  position: relative;
-  width: 100px;
-  height: 90px;
-  margin-top: 10px;
-}
+            #heart { 
+    position: relative; 
+    width: 100px; 
+    height: 90px; 
+} 
 
-#heart::before, #heart::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  width: 52px;
-  height: 80px;
-  border-radius: 50px 50px 0 0;
-  background: red;
-}
+#heart:before, #heart:after { 
+    position: absolute; 
+    content: ""; 
+    left: 50px; 
+    top: 0; 
+    width: 50px; 
+    height: 80px; 
+    background: red; 
+    border-radius: 50px 50px 0 0; 
+    transform: rotate(-45deg); 
+    transform-origin: 0 100%; 
+} 
 
-#heart::before {
-  left: 50px;
-  transform: rotate(-45deg);
-  transform-origin: 0 100%;
-}
-
-#heart::after {
-  left: 0;
-  transform: rotate(45deg);
-  transform-origin: 100% 100%;
+#heart:after { 
+    left: 0; 
+    transform: rotate(45deg); 
+    transform-origin :100% 100%; 
 }
         </style>
     </head>
     <body>   
-       <p style="color: #1db38c;font-size:50px;">nipange</p>              
+       <p style="color: #1db38c;font-size:20px;">nipange</p>              
        {{{body}}}
        <br />        
        <p>Sent with love from nipange</p>
-       <div class="heart"></div>
+       <div id="heart"></div>
        <p>Copyright nipange 2021. All right reserved.<br /> Dar es Salaam</p>           
     </body>
 </html>
