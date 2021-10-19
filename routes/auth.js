@@ -208,28 +208,31 @@ router.get('/verifyEmail/:id/:email', async (req, res) => {
       if (userEmail) return res.status(400).json({ error: 'email already used' });
     }
     // send email
-    console.log(email);
-    console.log(id);
-    console.log(process.env.COMPANY_EMAIL);
-
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      secure: false,
+      host: 'mail.nipange.com',    
+      secure: true,
       port: 465,
       auth: {
-        user: process.env.COMPANY_EMAIL,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.NOREPLY_EMAIL,
+        pass: process.env.NOREPLY_PASS,
       },
-      tls: { rejectUnauthorized: false },
+      tls: {
+        rejectUnauthorized: false
+       }     
     });
+    transporter.use('compile', hbs(hbsOptions));
     const mailOptions = {
-      from: process.env.COMPANY_EMAIL,
+      from: process.env.NOREPLY_EMAIL,
       to: email,
       subject: 'Verify email address',
-      text: `click this link to verify your email address https://admin.nipange.com/verifyEmail/?id=${user._id}`,
+      context:{
+        id: user._id,
+        name: user.username
+      },
+      template: 'verify-email'
     };
     await transporter.sendMail(mailOptions);
-    return res.status(200).json('ok');
+    return res.status(200).json('email sent');
   } catch (error) {
     console.log('erorrr');
     return res.status(400).json({ error });
